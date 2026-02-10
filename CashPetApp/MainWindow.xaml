@@ -5,258 +5,148 @@
         Height="700" 
         Width="1000"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
-        ResizeMode="CanMinimize">
+        Background="White">
 
     <Grid>
-        <!-- Верхняя панель с валютой -->
-        <Border Background="#4CAF50"
-                Height="80"
-                CornerRadius="0">
+        <!-- Левая часть с питомцем -->
+        <Border Background="#FFF9E6" BorderBrush="#FFD699" BorderThickness="0,0,1,0" Margin="581,0,0,0">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <!-- Питомец -->
+                <Border Width="200" Height="200" Background="#FFE066" CornerRadius="100"
+                        BorderBrush="#FFB300" BorderThickness="3" Margin="0,0,0,20">
+                    <TextBlock Text="🐹" FontSize="80" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Имя питомца -->
+                <TextBlock Text="Копилко-хомяк" FontSize="20" FontWeight="Bold" Foreground="#8B4513"
+                           HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                <!-- Статистика -->
+                <Border Background="White" CornerRadius="10" Padding="15" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="🍯 Баланс:" FontSize="14" Foreground="#666"/>
+                        <TextBlock x:Name="PetBalanceText" Text="15 000 ₽" FontSize="18" FontWeight="Bold" 
+                                   Foreground="#4CAF50" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="📈 Накоплено:" FontSize="14" Foreground="#666"/>
+                        <TextBlock Text="5 000 ₽" FontSize="16" FontWeight="Bold" Foreground="#2196F3" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="😊 Настроение:" FontSize="14" Foreground="#666"/>
+                        <TextBlock Text="Отличное!" FontSize="16" FontWeight="Bold" Foreground="#FF9800"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Правая часть с кнопками -->
+        <Border Margin="0,5,424,5" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Верхние 2 кнопки -->
+                <UniformGrid Grid.Row="0" Columns="2" Rows="1" Margin="40,95,40,0">
+                    <!-- Добавить трату -->
+
+                    <!-- Добавить доход -->
+                    <!-- Добавить трату -->
+
+                    <!-- Добавить доход -->
+                    <!-- Добавить трату -->
+
+                    <!-- Добавить доход -->
+                    <!-- Добавить трату -->
+                    <Button x:Name="ExpenseButton" Margin="20,20,20,20" Click="ExpenseButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="#FF5722" CornerRadius="15">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel>
+                            <TextBlock Text="💸" FontSize="48" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                            <TextBlock Text="Добавить трату" FontSize="18" FontWeight="Bold" 
+                                       Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,10"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Добавить доход -->
+                    <Button x:Name="IncomeButton" Margin="20,20,20,20" Click="IncomeButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="#4CAF50" CornerRadius="15">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel>
+                            <TextBlock Text="💰" FontSize="48" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                            <TextBlock Text="Добавить доход" FontSize="18" FontWeight="Bold" 
+                                       Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,10"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+
+                <!-- Нижние 2 кнопки -->
+                <UniformGrid Grid.Row="1" Columns="2" Rows="1" Margin="40,10,40,77">
+                    <!-- Мои цели -->
+                    <Button x:Name="GoalsButton" Margin="20,20,20,20" Click="GoalsButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#2196F3" CornerRadius="15">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel>
+                            <TextBlock Text="🎯" FontSize="48" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                            <TextBlock Text="Мои цели" FontSize="18" FontWeight="Bold" 
+                                       Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,10"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Настройки -->
+                    <Button x:Name="SettingsButton" Margin="20,20,20,20" Click="SettingsButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="#9C27B0" CornerRadius="15">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel>
+                            <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                            <TextBlock Text="Настройки" FontSize="18" FontWeight="Bold" 
+                                       Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,10"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+            </Grid>
+        </Border>
+
+        <!-- Верхняя панель -->
+        <Border Height="60" Background="#4CAF50" VerticalAlignment="Top">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Кнопка меню -->
-                <Button x:Name="MenuButton"
-                        Grid.Column="0" 
-                        Content="☰" 
-                        FontSize="24"
-                        Width="60"
-                        Height="60"
-                        Margin="20,0"
-                        Background="Transparent"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="MenuButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                CornerRadius="30">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <TextBlock Text="Финансовый Тамагоччи" Foreground="White" FontSize="22" FontWeight="Bold"
+                           VerticalAlignment="Top" HorizontalAlignment="Left" Margin="390,13,0,0"/>
 
-                <!-- Заголовок -->
-                <TextBlock Grid.Column="1"
-                           Text="Финансовый Тамагоччи"
-                           Foreground="White"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"/>
-
-                <!-- Баночка корма с валютой -->
-                <Border Grid.Column="2"
-                        Margin="20,0"
-                        Background="White"
-                        CornerRadius="20"
-                        Padding="15,10">
+                <!-- Баланс -->
+                <Border Background="White" CornerRadius="15" Padding="10,5" Margin="830,63,31,-39">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🍯"
-                                   FontSize="24"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock x:Name="CurrencyText"
-                                   Text="0 ₽"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="#4CAF50"
-                                   Margin="10,0,0,0"
-                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="🍯" FontSize="20" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="BalanceText" Text="15 000.50 ₽" FontSize="16" FontWeight="Bold" 
+                                   Foreground="#4CAF50" Margin="5,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
-
-        <!-- Основное содержимое - главное меню -->
-        <Grid Margin="0,80,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="2*"/>
-                <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>
-
-            <!-- Приветствие -->
-            <TextBlock x:Name="WelcomeText"
-                       Grid.Row="0"
-                       Text="Привет, Друг!"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       Foreground="#4CAF50"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Margin="0,20"/>
-
-            <!-- Первый ряд кнопок -->
-            <UniformGrid Grid.Row="1" 
-                         Columns="2" 
-                         Rows="1"
-                         Margin="40,20">
-                <!-- Добавить трату -->
-                <Button x:Name="ExpenseButton"
-                        Margin="20"
-                        Background="#FF5722"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="ExpenseButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                CornerRadius="15">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <StackPanel>
-                        <TextBlock Text="💸"
-                                   FontSize="48"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                        <TextBlock Text="Добавить трату"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- Добавить заработок -->
-                <Button x:Name="IncomeButton"
-                        Margin="20"
-                        Background="#4CAF50"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="IncomeButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                CornerRadius="15">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <StackPanel>
-                        <TextBlock Text="💰"
-                                   FontSize="48"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                        <TextBlock Text="Добавить заработок"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                    </StackPanel>
-                </Button>
-            </UniformGrid>
-
-            <!-- Второй ряд кнопок -->
-            <UniformGrid Grid.Row="2" 
-                         Columns="2" 
-                         Rows="1"
-                         Margin="40,20">
-                <!-- Питомец -->
-                <Button x:Name="PetButton"
-                        Margin="20"
-                        Background="#FFC107"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="PetButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                CornerRadius="15">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <StackPanel>
-                        <TextBlock Text="🐹"
-                                   FontSize="48"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                        <TextBlock Text="Мой питомец"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- Цели -->
-                <Button x:Name="GoalsButton"
-                        Margin="20"
-                        Background="#2196F3"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="GoalsButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                CornerRadius="15">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                    <StackPanel>
-                        <TextBlock Text="🎯"
-                                   FontSize="48"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,10"/>
-                        <TextBlock Text="Мои цели"
-                                   FontSize="18"
-                                   FontWeight="FontWeights.Bold"
-                                   Foreground="White"
-                                   HorizontalAlignment="HorizontalAlignment.Center"
-                                   Margin="0,10"/>
-                    </StackPanel>
-                </Button>
-            </UniformGrid>
-        </Grid>
-
-        <!-- Диалоговые окна будут открываться поверх -->
     </Grid>
 </Window>
