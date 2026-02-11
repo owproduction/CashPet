@@ -9,19 +9,26 @@ namespace FinancialTamagotchi
     public partial class MainWindow : Window
     {
         private double balance = 15000.50;
+        private int foodCurrency = 100; // Игровая валюта (корм)
+        private int petEnergy = 80; // Энергия питомца (0-100)
+        private string petMood = "Отличное! 😊";
         private List<FinancialGoal> goals = new List<FinancialGoal>();
+        private Random random = new Random();
 
         public MainWindow()
         {
             try
             {
                 InitializeComponent();
-                UpdateBalance();
+                UpdateUI();
                 SetupButtonEffects();
 
                 // Добавляем тестовые цели
                 goals.Add(new FinancialGoal("Новый ноутбук", 50000, 25000, DateTime.Now.AddMonths(3)));
                 goals.Add(new FinancialGoal("Отпуск на море", 100000, 30000, DateTime.Now.AddMonths(6)));
+
+                // Запускаем анимацию питомца
+                StartPetAnimation();
             }
             catch (Exception ex)
             {
@@ -29,9 +36,27 @@ namespace FinancialTamagotchi
             }
         }
 
+        private void StartPetAnimation()
+        {
+            // Простая анимация питомца
+            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.95,
+                To = 1.05,
+                Duration = TimeSpan.FromSeconds(2),
+                AutoReverse = true,
+                RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+            };
+
+            PetBorder.RenderTransformOrigin = new Point(0.5, 0.5);
+            PetBorder.RenderTransform = new ScaleTransform();
+            PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+            PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
+        }
+
         private void SetupButtonEffects()
         {
-            var buttons = new[] { ExpenseButton, IncomeButton, GoalsButton, SettingsButton };
+            var buttons = new[] { ExpenseButton, IncomeButton, GoalsButton, FoodShopButton, FeedPetButton };
 
             foreach (var button in buttons)
             {
@@ -50,10 +75,50 @@ namespace FinancialTamagotchi
             }
         }
 
-        private void UpdateBalance()
+        private void UpdateUI()
         {
+            // Обновляем денежный баланс
             BalanceText.Text = $"{balance:N2} ₽";
             PetBalanceText.Text = $"{balance:N0} ₽";
+
+            // Обновляем игровую валюту
+            FoodCurrencyText.Text = foodCurrency.ToString();
+            FoodText.Text = foodCurrency.ToString();
+
+            // Обновляем состояние питомца
+            MoodText.Text = petMood;
+            EnergyBar.Value = petEnergy;
+
+            // Обновляем внешний вид питомца в зависимости от энергии
+            UpdatePetAppearance();
+        }
+
+        private void UpdatePetAppearance()
+        {
+            if (petEnergy <= 20)
+            {
+                PetEmoji.Text = "😴"; // Сонный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 235, 156)); // Бледно-желтый
+                petMood = "Устал... 😴";
+            }
+            else if (petEnergy <= 50)
+            {
+                PetEmoji.Text = "😐"; // Нейтральный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 224, 102)); // Светло-желтый
+                petMood = "Нормально 😐";
+            }
+            else if (petEnergy <= 80)
+            {
+                PetEmoji.Text = "😊"; // Довольный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Желтый
+                petMood = "Хорошо! 😊";
+            }
+            else
+            {
+                PetEmoji.Text = "😄"; // Очень довольный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7)); // Ярко-желтый
+                petMood = "Отлично! 😄";
+            }
         }
 
         private void ExpenseButton_Click(object sender, RoutedEventArgs e)
@@ -71,10 +136,52 @@ namespace FinancialTamagotchi
             ShowGoalsDialog();
         }
 
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        private void FoodShopButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("⚙️ Настройки\n\nЭта функция будет доступна в следующем обновлении!",
-                "Настройки", MessageBoxButton.OK, MessageBoxImage.Information);
+            ShowShopDialog();
+        }
+
+        private void FeedPetButton_Click(object sender, RoutedEventArgs e)
+        {
+            FeedPet();
+        }
+
+        private void FeedPet()
+        {
+            if (foodCurrency >= 10)
+            {
+                foodCurrency -= 10;
+                petEnergy = Math.Min(100, petEnergy + 20);
+
+                // Случайный бонус
+                if (random.Next(100) < 30) // 30% шанс
+                {
+                    int bonus = random.Next(5, 15);
+                    foodCurrency += bonus;
+                    MessageBox.Show($"Питомец нашел {bonus}🥕 во время еды!", "Бонус!",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                UpdateUI();
+
+                // Анимация кормления
+                var animation = new System.Windows.Media.Animation.DoubleAnimation
+                {
+                    From = 1.2,
+                    To = 1.0,
+                    Duration = TimeSpan.FromSeconds(0.3)
+                };
+                PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+                PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
+
+                MessageBox.Show("Питомец покормлен! +20⚡", "Кормление",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("Недостаточно корма! Купите больше в магазине.", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void ShowAddExpenseDialog()
@@ -147,9 +254,13 @@ namespace FinancialTamagotchi
                     }
 
                     balance -= amount;
-                    UpdateBalance();
 
-                    MessageBox.Show($"Трата на {amount:N2}₽ добавлена!\nКатегория: {categoryBox.SelectedItem}",
+                    // Питомец теряет энергию при тратах
+                    petEnergy = Math.Max(0, petEnergy - 5);
+
+                    UpdateUI();
+
+                    MessageBox.Show($"Трата на {amount:N2}₽ добавлена!\nКатегория: {categoryBox.SelectedItem}\n\nПитомец немного расстроился от траты... -5⚡",
                         "Успешно!", MessageBoxButton.OK, MessageBoxImage.Information);
                     dialog.Close();
                 }
@@ -177,7 +288,7 @@ namespace FinancialTamagotchi
             {
                 Title = "💰 Добавить доход",
                 Width = 400,
-                Height = 350,
+                Height = 400,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
                 ResizeMode = ResizeMode.NoResize,
@@ -233,9 +344,20 @@ namespace FinancialTamagotchi
                 if (double.TryParse(amountBox.Text, out double amount) && amount > 0)
                 {
                     balance += amount;
-                    UpdateBalance();
 
-                    MessageBox.Show($"Доход {amount:N2}₽ добавлен!\nИсточник: {sourceBox.SelectedItem}",
+                    // Награда за доход: игровая валюта
+                    int foodReward = (int)(amount / 1000); // 1 корм за каждые 1000 рублей
+                    if (foodReward < 1) foodReward = 1;
+                    if (foodReward > 50) foodReward = 50;
+
+                    foodCurrency += foodReward;
+
+                    // Питомец радуется доходу
+                    petEnergy = Math.Min(100, petEnergy + 10);
+
+                    UpdateUI();
+
+                    MessageBox.Show($"Доход {amount:N2}₽ добавлен!\nИсточник: {sourceBox.SelectedItem}\n\n🎉 Награда: +{foodReward}🥕 (игровая валюта)\nПитомец радуется! +10⚡",
                         "Успешно!", MessageBoxButton.OK, MessageBoxImage.Information);
                     dialog.Close();
                 }
@@ -283,10 +405,48 @@ namespace FinancialTamagotchi
             };
             mainPanel.Children.Add(title);
 
+            // Информация о наградах
+            var rewardInfo = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(255, 248, 225)),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(15, 15, 15, 15),
+                Margin = new Thickness(0, 0, 0, 20),
+                BorderBrush = Brushes.Orange,
+                BorderThickness = new Thickness(1, 1, 1, 1)
+            };
+
+            var rewardStack = new StackPanel();
+            rewardStack.Children.Add(new TextBlock
+            {
+                Text = "🎁 Награды за выполнение целей:",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Orange,
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            rewardStack.Children.Add(new TextBlock
+            {
+                Text = "• За выполнение цели: 50-100🥕",
+                FontSize = 12,
+                Margin = new Thickness(10, 0, 0, 2)
+            });
+
+            rewardStack.Children.Add(new TextBlock
+            {
+                Text = "• Чем больше цель, тем больше награда!",
+                FontSize = 12,
+                Margin = new Thickness(10, 0, 0, 0)
+            });
+
+            rewardInfo.Child = rewardStack;
+            mainPanel.Children.Add(rewardInfo);
+
             // Панель целей
             var goalsScroll = new ScrollViewer
             {
-                Height = 400,
+                Height = 350,
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
@@ -391,6 +551,20 @@ namespace FinancialTamagotchi
                 Foreground = goal.IsCompleted ? Brushes.LimeGreen : Brushes.Orange
             };
 
+            // Награда за выполнение
+            if (goal.IsCompleted && !goal.RewardClaimed)
+            {
+                var rewardText = new TextBlock
+                {
+                    Text = $" 🎁 +{goal.RewardAmount}🥕",
+                    FontSize = 14,
+                    Margin = new Thickness(10, 0, 0, 0),
+                    Foreground = Brushes.Orange,
+                    FontWeight = FontWeights.Bold
+                };
+                headerPanel.Children.Add(rewardText);
+            }
+
             headerPanel.Children.Add(nameText);
             headerPanel.Children.Add(statusText);
             stack.Children.Add(headerPanel);
@@ -430,6 +604,22 @@ namespace FinancialTamagotchi
                 FontStyle = FontStyles.Italic,
                 Foreground = Brushes.Gray
             });
+
+            // Кнопка получения награды
+            if (goal.IsCompleted && !goal.RewardClaimed)
+            {
+                var claimButton = CreateSmallButton("🎁 Получить награду", Brushes.Orange);
+                claimButton.Click += (s, e) =>
+                {
+                    foodCurrency += goal.RewardAmount;
+                    goal.RewardClaimed = true;
+                    UpdateUI();
+                    MessageBox.Show($"Получено {goal.RewardAmount}🥕 за выполнение цели '{goal.Name}'!",
+                        "Награда получена!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ShowGoalsDialog(); // Обновляем диалог
+                };
+                stack.Children.Add(claimButton);
+            }
 
             card.Child = stack;
             return card;
@@ -541,16 +731,22 @@ namespace FinancialTamagotchi
                     return;
                 }
 
+                // Рассчитываем награду в зависимости от размера цели
+                int reward = (int)(target / 1000); // 1 корм за каждые 1000 рублей цели
+                if (reward < 50) reward = 50; // Минимум 50 корма
+                if (reward > 100) reward = 100; // Максимум 100 корма
+
                 var newGoal = new FinancialGoal(
                     nameBox.Text,
                     target,
                     current,
-                    datePicker.SelectedDate.Value
+                    datePicker.SelectedDate.Value,
+                    reward
                 );
 
                 goals.Add(newGoal);
-                MessageBox.Show($"Цель '{nameBox.Text}' добавлена!", "Успех",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Цель '{nameBox.Text}' добавлена!\n\nНаграда за выполнение: {reward}🥕",
+                    "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 dialog.Close();
                 ShowGoalsDialog();
             };
@@ -608,8 +804,6 @@ namespace FinancialTamagotchi
             }
 
             goalsCombo.SelectedIndex = 0;
-
-            // Используем DisplayMemberPath для отображения имени
             goalsCombo.DisplayMemberPath = "Name";
             mainPanel.Children.Add(goalsCombo);
 
@@ -654,10 +848,22 @@ namespace FinancialTamagotchi
                 {
                     selectedGoal.CurrentAmount += amount;
                     balance -= amount;
-                    UpdateBalance();
 
-                    MessageBox.Show($"Цель '{selectedGoal.Name}' пополнена на {amount:N2}₽!", "Успех",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Маленькая награда за пополнение цели
+                    if (random.Next(100) < 20) // 20% шанс
+                    {
+                        int bonus = random.Next(1, 5);
+                        foodCurrency += bonus;
+                        MessageBox.Show($"Цель '{selectedGoal.Name}' пополнена на {amount:N2}₽!\n\nБонус: +{bonus}🥕 за активность!",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Цель '{selectedGoal.Name}' пополнена на {amount:N2}₽!",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
+                    UpdateUI();
                     dialog.Close();
                     ShowGoalsDialog();
                 }
@@ -670,6 +876,136 @@ namespace FinancialTamagotchi
             buttonPanel.Children.Add(cancelButton);
             mainPanel.Children.Add(buttonPanel);
 
+            dialog.Content = mainPanel;
+            dialog.ShowDialog();
+        }
+
+        private void ShowShopDialog()
+        {
+            var dialog = new Window
+            {
+                Title = "🛒 Магазин корма",
+                Width = 500,
+                Height = 400,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                Background = Brushes.White
+            };
+
+            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Заголовок
+            var title = new TextBlock
+            {
+                Text = "Купить корм для питомца",
+                FontSize = 20,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Purple,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            mainPanel.Children.Add(title);
+
+            // Товары
+            var products = new[]
+            {
+                new { Name = "🥕 Маленький пакет", Amount = 10, Price = 100.0, Description = "10 единиц корма" },
+                new { Name = "🥕🥕 Средний пакет", Amount = 25, Price = 225.0, Description = "25 единиц корма (скидка 10%)" },
+                new { Name = "🥕🥕🥕 Большой пакет", Amount = 50, Price = 400.0, Description = "50 единиц корма (скидка 20%)" },
+                new { Name = "🎁 Сюрприз-пакет", Amount = 15, Price = 120.0, Description = "15 корма + случайный бонус!" }
+            };
+
+            foreach (var product in products)
+            {
+                var productCard = new Border
+                {
+                    Background = Brushes.WhiteSmoke,
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(15, 15, 15, 15),
+                    Margin = new Thickness(0, 0, 0, 10),
+                    BorderBrush = Brushes.LightGray,
+                    BorderThickness = new Thickness(1, 1, 1, 1)
+                };
+
+                var stack = new StackPanel();
+
+                // Название и цена
+                var headerPanel = new StackPanel();
+                headerPanel.Orientation = Orientation.Horizontal;
+
+                headerPanel.Children.Add(new TextBlock
+                {
+                    Text = product.Name,
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.Purple,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                headerPanel.Children.Add(new TextBlock
+                {
+                    Text = $" - {product.Price}₽",
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.Green,
+                    Margin = new Thickness(10, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                stack.Children.Add(headerPanel);
+
+                // Описание
+                stack.Children.Add(new TextBlock
+                {
+                    Text = product.Description,
+                    FontSize = 12,
+                    Margin = new Thickness(0, 5, 0, 10),
+                    Foreground = Brushes.Gray
+                });
+
+                // Кнопка покупки
+                var buyButton = CreateSmallButton($"Купить ({product.Amount}🥕)", Brushes.Purple);
+                buyButton.Click += (s, e) =>
+                {
+                    if (balance >= product.Price)
+                    {
+                        balance -= product.Price;
+                        foodCurrency += product.Amount;
+
+                        // Бонус для сюрприз-пакета
+                        if (product.Name.Contains("Сюрприз"))
+                        {
+                            int bonus = random.Next(5, 20);
+                            foodCurrency += bonus;
+                            MessageBox.Show($"Вы купили {product.Name}!\nПолучено: {product.Amount}🥕\nБонус: +{bonus}🥕\nИтого: {product.Amount + bonus}🥕",
+                                "Покупка + бонус!", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Вы купили {product.Name}!\nПолучено: {product.Amount}🥕",
+                                "Покупка совершена!", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+
+                        UpdateUI();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Недостаточно средств для покупки!", "Ошибка",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                };
+
+                stack.Children.Add(buyButton);
+                productCard.Child = stack;
+                mainPanel.Children.Add(productCard);
+            }
+
+            // Кнопка закрытия
+            var closeButton = CreateButton("Закрыть", Brushes.Gray);
+            closeButton.HorizontalAlignment = HorizontalAlignment.Center;
+            closeButton.Click += (s, e) => dialog.Close();
+
+            mainPanel.Children.Add(closeButton);
             dialog.Content = mainPanel;
             dialog.ShowDialog();
         }
@@ -708,6 +1044,27 @@ namespace FinancialTamagotchi
             return button;
         }
 
+        private Button CreateSmallButton(string content, Brush background)
+        {
+            var button = new Button
+            {
+                Content = content,
+                Width = 150,
+                Height = 30,
+                FontSize = 12,
+                Background = background,
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+
+            button.Template = new ControlTemplate(typeof(Button))
+            {
+                VisualTree = GetButtonTemplate()
+            };
+
+            return button;
+        }
+
         private FrameworkElementFactory GetButtonTemplate()
         {
             var borderFactory = new FrameworkElementFactory(typeof(Border));
@@ -732,14 +1089,18 @@ namespace FinancialTamagotchi
         public double TargetAmount { get; set; }
         public double CurrentAmount { get; set; }
         public DateTime Deadline { get; set; }
+        public int RewardAmount { get; set; }
+        public bool RewardClaimed { get; set; }
         public bool IsCompleted => CurrentAmount >= TargetAmount;
 
-        public FinancialGoal(string name, double targetAmount, double currentAmount, DateTime deadline)
+        public FinancialGoal(string name, double targetAmount, double currentAmount, DateTime deadline, int rewardAmount = 50)
         {
             Name = name;
             TargetAmount = targetAmount;
             CurrentAmount = currentAmount;
             Deadline = deadline;
+            RewardAmount = rewardAmount;
+            RewardClaimed = false;
         }
     }
 }

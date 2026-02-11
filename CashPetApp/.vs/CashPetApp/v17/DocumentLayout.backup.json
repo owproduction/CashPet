@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -43,15 +43,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "CashPetApp",
+              "Title": "CashPetApp.csproj",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
               "RelativeDocumentMoniker": "CashPetApp.csproj",
               "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
               "RelativeToolTip": "CashPetApp.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-02-10T07:56:16.013Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-10T07:56:16.013Z"
             },
             {
               "$type": "Document",
@@ -63,8 +62,7 @@
               "RelativeToolTip": "AssemblyInfo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T07:56:13.586Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-10T07:56:13.586Z"
             },
             {
               "$type": "Document",
@@ -76,12 +74,11 @@
               "RelativeToolTip": "App.xaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-04T10:10:02.895Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-04T10:10:02.895Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "App.xaml",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml",
               "RelativeDocumentMoniker": "App.xaml",
@@ -105,13 +102,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AgIAAM4CAAAAAAAAAAAkwOgCAAABAAAAAAAAAA==",
+              "ViewState": "AgIAADQEAAAAAAAAAAAkwFEEAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-04T09:49:35.605Z",
               "EditorCaption": ""
