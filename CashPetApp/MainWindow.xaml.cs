@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
+using System.Linq;
 
 namespace FinancialTamagotchi
 {
@@ -13,7 +15,12 @@ namespace FinancialTamagotchi
         private int petEnergy = 80; // Энергия питомца (0-100)
         private string petMood = "Отличное! 😊";
         private List<FinancialGoal> goals = new List<FinancialGoal>();
+        private List<Transaction> transactions = new List<Transaction>(); // История транзакций
         private Random random = new Random();
+
+        // Таймер для автоматического уменьшения энергии
+        private DispatcherTimer hungerTimer;
+        private int secondsWithoutFood = 0;
 
         public MainWindow()
         {
@@ -27,13 +34,105 @@ namespace FinancialTamagotchi
                 goals.Add(new FinancialGoal("Новый ноутбук", 50000, 25000, DateTime.Now.AddMonths(3)));
                 goals.Add(new FinancialGoal("Отпуск на море", 100000, 30000, DateTime.Now.AddMonths(6)));
 
+                // Добавляем тестовые транзакции для графиков
+                AddTestTransactions();
+
                 // Запускаем анимацию питомца
                 StartPetAnimation();
+
+                // Запускаем таймер голода
+                StartHungerTimer();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка инициализации: " + ex.Message);
             }
+        }
+
+        private void AddTestTransactions()
+        {
+            // Добавляем тестовые данные за последние 30 дней
+            var random = new Random();
+            var today = DateTime.Today;
+
+            for (int i = 0; i < 30; i++)
+            {
+                var date = today.AddDays(-i);
+
+                // Случайный доход
+                if (random.Next(3) < 2) // 66% шанс дохода
+                {
+                    transactions.Add(new Transaction
+                    {
+                        Date = date,
+                        Amount = random.Next(1000, 5000),
+                        Type = "Income",
+                        Category = "Зарплата"
+                    });
+                }
+
+                // Случайный расход
+                if (random.Next(3) < 2) // 66% шанс расхода
+                {
+                    transactions.Add(new Transaction
+                    {
+                        Date = date,
+                        Amount = random.Next(500, 3000),
+                        Type = "Expense",
+                        Category = "Продукты"
+                    });
+                }
+            }
+        }
+
+        private void StartHungerTimer()
+        {
+            hungerTimer = new DispatcherTimer();
+            hungerTimer.Interval = TimeSpan.FromSeconds(30); // Каждые 30 секунд
+            hungerTimer.Tick += HungerTimer_Tick;
+            hungerTimer.Start();
+        }
+
+        private void HungerTimer_Tick(object sender, EventArgs e)
+        {
+            // Уменьшаем энергию питомца
+            petEnergy = Math.Max(0, petEnergy - 5);
+            secondsWithoutFood += 30;
+
+            // Если питомец голоден очень долго
+            if (secondsWithoutFood >= 120) // 2 минуты
+            {
+                petEnergy = Math.Max(0, petEnergy - 10);
+            }
+
+            // Обновляем интерфейс
+            Dispatcher.Invoke(() =>
+            {
+                UpdateUI();
+
+                // Показываем предупреждение при низкой энергии
+                if (petEnergy <= 20 && petEnergy > 0)
+                {
+                    MoodText.Text = "Очень голоден! 🥺";
+                    PetEmoji.Text = "😢";
+
+                    // Показываем сообщение только если питомец стал сильно голодным
+                    if (petEnergy == 20 || petEnergy == 10)
+                    {
+                        MessageBox.Show($"🥺 {PetNameText.Text} очень голоден! Энергия: {petEnergy}%\nПокормите его скорее!",
+                            "Питомец голоден!", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                else if (petEnergy <= 0)
+                {
+                    PetEmoji.Text = "😴";
+                    MoodText.Text = "Уснул от голода... 😴";
+                    PetBorder.Background = new SolidColorBrush(Color.FromRgb(200, 200, 200));
+
+                    MessageBox.Show($"😴 {PetNameText.Text} уснул от голода!\nПокормите его, чтобы разбудить!",
+                        "Питомец уснул!", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            });
         }
 
         private void StartPetAnimation()
@@ -56,7 +155,7 @@ namespace FinancialTamagotchi
 
         private void SetupButtonEffects()
         {
-            var buttons = new[] { ExpenseButton, IncomeButton, GoalsButton, FoodShopButton, FeedPetButton };
+            var buttons = new[] { ExpenseButton, IncomeButton, GoalsButton, ChartsButton, FeedPetButton };
 
             foreach (var button in buttons)
             {
@@ -95,16 +194,28 @@ namespace FinancialTamagotchi
 
         private void UpdatePetAppearance()
         {
-            if (petEnergy <= 20)
+            if (petEnergy <= 0)
             {
                 PetEmoji.Text = "😴"; // Сонный
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 235, 156)); // Бледно-желтый
-                petMood = "Устал... 😴";
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(200, 200, 200)); // Серый
+                petMood = "Уснул 😴";
             }
-            else if (petEnergy <= 50)
+            else if (petEnergy <= 20)
+            {
+                PetEmoji.Text = "😢"; // Грустный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 235, 156)); // Бледно-желтый
+                petMood = "Очень голоден! 🥺";
+            }
+            else if (petEnergy <= 40)
+            {
+                PetEmoji.Text = "😕"; // Недовольный
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 224, 102)); // Светло-желтый
+                petMood = "Хочет кушать 😐";
+            }
+            else if (petEnergy <= 60)
             {
                 PetEmoji.Text = "😐"; // Нейтральный
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 224, 102)); // Светло-желтый
+                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 214, 51)); // Желтый
                 petMood = "Нормально 😐";
             }
             else if (petEnergy <= 80)
@@ -136,9 +247,9 @@ namespace FinancialTamagotchi
             ShowGoalsDialog();
         }
 
-        private void FoodShopButton_Click(object sender, RoutedEventArgs e)
+        private void ChartsButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowShopDialog();
+            ShowChartsDialog();
         }
 
         private void FeedPetButton_Click(object sender, RoutedEventArgs e)
@@ -151,7 +262,20 @@ namespace FinancialTamagotchi
             if (foodCurrency >= 10)
             {
                 foodCurrency -= 10;
+
+                // Восстанавливаем энергию
+                int oldEnergy = petEnergy;
                 petEnergy = Math.Min(100, petEnergy + 20);
+
+                // Сбрасываем счётчик голода
+                secondsWithoutFood = 0;
+
+                // Если питомец спал, просыпается
+                if (oldEnergy <= 0)
+                {
+                    MessageBox.Show($"{PetNameText.Text} проснулся и радостно ест! 🎉",
+                        "Питомец проснулся!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
 
                 // Случайный бонус
                 if (random.Next(100) < 30) // 30% шанс
@@ -174,12 +298,12 @@ namespace FinancialTamagotchi
                 PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
                 PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
 
-                MessageBox.Show("Питомец покормлен! +20⚡", "Кормление",
+                MessageBox.Show($"Питомец покормлен! +20⚡\nЭнергия: {petEnergy}%", "Кормление",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Недостаточно корма! Купите больше в магазине.", "Ошибка",
+                MessageBox.Show("Недостаточно корма! Заработайте его, добавляя доходы.", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
@@ -254,6 +378,15 @@ namespace FinancialTamagotchi
                     }
 
                     balance -= amount;
+
+                    // Добавляем транзакцию
+                    transactions.Add(new Transaction
+                    {
+                        Date = DateTime.Today,
+                        Amount = amount,
+                        Type = "Expense",
+                        Category = categoryBox.SelectedItem.ToString()
+                    });
 
                     // Питомец теряет энергию при тратах
                     petEnergy = Math.Max(0, petEnergy - 5);
@@ -345,12 +478,18 @@ namespace FinancialTamagotchi
                 {
                     balance += amount;
 
-                    // Награда за доход: игровая валюта
-                    int foodReward = (int)(amount / 1000); // 1 корм за каждые 1000 рублей
-                    if (foodReward < 1) foodReward = 1;
-                    if (foodReward > 50) foodReward = 50;
-
+                    // Награда за доход: фиксированные +10 корма
+                    int foodReward = 10;
                     foodCurrency += foodReward;
+
+                    // Добавляем транзакцию
+                    transactions.Add(new Transaction
+                    {
+                        Date = DateTime.Today,
+                        Amount = amount,
+                        Type = "Income",
+                        Category = sourceBox.SelectedItem.ToString()
+                    });
 
                     // Питомец радуется доходу
                     petEnergy = Math.Min(100, petEnergy + 10);
@@ -377,6 +516,270 @@ namespace FinancialTamagotchi
 
             dialog.Content = mainPanel;
             dialog.ShowDialog();
+        }
+
+        private void ShowChartsDialog()
+        {
+            var dialog = new Window
+            {
+                Title = "📊 Графики доходов и расходов",
+                Width = 600,
+                Height = 700,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                Background = Brushes.White
+            };
+
+            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Заголовок
+            var title = new TextBlock
+            {
+                Text = "Финансовая статистика",
+                FontSize = 24,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+            mainPanel.Children.Add(title);
+
+            // Сводка
+            var summaryPanel = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(15, 15, 15, 15),
+                Margin = new Thickness(0, 0, 0, 20),
+                BorderBrush = Brushes.LightBlue,
+                BorderThickness = new Thickness(1, 1, 1, 1)
+            };
+
+            var summaryStack = new StackPanel();
+
+            var totalIncome = transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+            var totalExpense = transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+            var balance = totalIncome - totalExpense;
+
+            summaryStack.Children.Add(new TextBlock
+            {
+                Text = "💰 Общая статистика:",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            summaryStack.Children.Add(new TextBlock
+            {
+                Text = $"Всего доходов: {totalIncome:N2} ₽",
+                FontSize = 14,
+                Margin = new Thickness(10, 0, 0, 5)
+            });
+
+            summaryStack.Children.Add(new TextBlock
+            {
+                Text = $"Всего расходов: {totalExpense:N2} ₽",
+                FontSize = 14,
+                Margin = new Thickness(10, 0, 0, 5)
+            });
+
+            summaryStack.Children.Add(new TextBlock
+            {
+                Text = $"Итоговый баланс: {balance:N2} ₽",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = balance >= 0 ? Brushes.Green : Brushes.Red,
+                Margin = new Thickness(10, 5, 0, 0)
+            });
+
+            summaryPanel.Child = summaryStack;
+            mainPanel.Children.Add(summaryPanel);
+
+            // График по дням (последние 7 дней)
+            var dailyTitle = new TextBlock
+            {
+                Text = "📅 Доходы и расходы по дням (последние 7 дней):",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            mainPanel.Children.Add(dailyTitle);
+
+            var today = DateTime.Today;
+            for (int i = 6; i >= 0; i--)
+            {
+                var date = today.AddDays(-i);
+                var dayIncome = transactions.Where(t => t.Type == "Income" && t.Date.Date == date).Sum(t => t.Amount);
+                var dayExpense = transactions.Where(t => t.Type == "Expense" && t.Date.Date == date).Sum(t => t.Amount);
+
+                var dayPanel = CreateDayChart(date.ToString("dd.MM"), dayIncome, dayExpense);
+                mainPanel.Children.Add(dayPanel);
+            }
+
+            // График по категориям
+            var categoryTitle = new TextBlock
+            {
+                Text = "📊 Расходы по категориям:",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue,
+                Margin = new Thickness(0, 20, 0, 10)
+            };
+            mainPanel.Children.Add(categoryTitle);
+
+            var expensesByCategory = transactions
+                .Where(t => t.Type == "Expense")
+                .GroupBy(t => t.Category)
+                .Select(g => new { Category = g.Key, Total = g.Sum(t => t.Amount) })
+                .OrderByDescending(x => x.Total);
+
+            if (!expensesByCategory.Any())
+            {
+                mainPanel.Children.Add(new TextBlock
+                {
+                    Text = "Нет данных о расходах",
+                    FontSize = 14,
+                    FontStyle = FontStyles.Italic,
+                    Foreground = Brushes.Gray,
+                    Margin = new Thickness(10, 0, 0, 10)
+                });
+            }
+            else
+            {
+                double maxExpense = expensesByCategory.Max(x => x.Total);
+                foreach (var item in expensesByCategory)
+                {
+                    var categoryPanel = CreateCategoryChart(item.Category, item.Total, maxExpense);
+                    mainPanel.Children.Add(categoryPanel);
+                }
+            }
+
+            // Кнопка закрытия
+            var closeButton = CreateButton("Закрыть", Brushes.Gray);
+            closeButton.HorizontalAlignment = HorizontalAlignment.Center;
+            closeButton.Margin = new Thickness(0, 20, 0, 0);
+            closeButton.Click += (s, e) => dialog.Close();
+            mainPanel.Children.Add(closeButton);
+
+            dialog.Content = new ScrollViewer { Content = mainPanel };
+            dialog.ShowDialog();
+        }
+
+        private Border CreateDayChart(string day, double income, double expense)
+        {
+            var border = new Border
+            {
+                Background = Brushes.WhiteSmoke,
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 5, 10, 5),
+                Margin = new Thickness(0, 0, 0, 5),
+                BorderBrush = Brushes.LightGray,
+                BorderThickness = new Thickness(1, 1, 1, 1)
+            };
+
+            var stack = new StackPanel();
+
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = day,
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Width = 80
+            });
+
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = $"Доход: {income:N0}₽",
+                FontSize = 12,
+                Foreground = Brushes.Green,
+                Width = 100
+            });
+
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = $"Расход: {expense:N0}₽",
+                FontSize = 12,
+                Foreground = Brushes.Red,
+                Width = 100
+            });
+
+            stack.Children.Add(headerPanel);
+
+            // Визуальное представление
+            var barPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
+
+            if (income > 0)
+            {
+                var incomeBar = new Border
+                {
+                    Background = Brushes.LimeGreen,
+                    Width = Math.Min(200, income / 50),
+                    Height = 10,
+                    Margin = new Thickness(0, 0, 2, 0)
+                };
+                barPanel.Children.Add(incomeBar);
+            }
+
+            if (expense > 0)
+            {
+                var expenseBar = new Border
+                {
+                    Background = Brushes.OrangeRed,
+                    Width = Math.Min(200, expense / 50),
+                    Height = 10
+                };
+                barPanel.Children.Add(expenseBar);
+            }
+
+            stack.Children.Add(barPanel);
+            border.Child = stack;
+            return border;
+        }
+
+        private Border CreateCategoryChart(string category, double amount, double maxAmount)
+        {
+            var border = new Border
+            {
+                Background = Brushes.WhiteSmoke,
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 5, 10, 5),
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+
+            var stack = new StackPanel();
+
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = category,
+                FontSize = 14,
+                Width = 120
+            });
+
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = $"{amount:N0}₽",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue
+            });
+
+            stack.Children.Add(headerPanel);
+
+            var bar = new Border
+            {
+                Background = Brushes.DodgerBlue,
+                Width = (amount / maxAmount) * 300,
+                Height = 10,
+                Margin = new Thickness(0, 2, 0, 0)
+            };
+            stack.Children.Add(bar);
+
+            border.Child = stack;
+            return border;
         }
 
         private void ShowGoalsDialog()
@@ -550,20 +953,6 @@ namespace FinancialTamagotchi
                 Margin = new Thickness(10, 0, 0, 0),
                 Foreground = goal.IsCompleted ? Brushes.LimeGreen : Brushes.Orange
             };
-
-            // Награда за выполнение
-            if (goal.IsCompleted && !goal.RewardClaimed)
-            {
-                var rewardText = new TextBlock
-                {
-                    Text = $" 🎁 +{goal.RewardAmount}🥕",
-                    FontSize = 14,
-                    Margin = new Thickness(10, 0, 0, 0),
-                    Foreground = Brushes.Orange,
-                    FontWeight = FontWeights.Bold
-                };
-                headerPanel.Children.Add(rewardText);
-            }
 
             headerPanel.Children.Add(nameText);
             headerPanel.Children.Add(statusText);
@@ -880,136 +1269,6 @@ namespace FinancialTamagotchi
             dialog.ShowDialog();
         }
 
-        private void ShowShopDialog()
-        {
-            var dialog = new Window
-            {
-                Title = "🛒 Магазин корма",
-                Width = 500,
-                Height = 400,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                Background = Brushes.White
-            };
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Заголовок
-            var title = new TextBlock
-            {
-                Text = "Купить корм для питомца",
-                FontSize = 20,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Purple,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(title);
-
-            // Товары
-            var products = new[]
-            {
-                new { Name = "🥕 Маленький пакет", Amount = 10, Price = 100.0, Description = "10 единиц корма" },
-                new { Name = "🥕🥕 Средний пакет", Amount = 25, Price = 225.0, Description = "25 единиц корма (скидка 10%)" },
-                new { Name = "🥕🥕🥕 Большой пакет", Amount = 50, Price = 400.0, Description = "50 единиц корма (скидка 20%)" },
-                new { Name = "🎁 Сюрприз-пакет", Amount = 15, Price = 120.0, Description = "15 корма + случайный бонус!" }
-            };
-
-            foreach (var product in products)
-            {
-                var productCard = new Border
-                {
-                    Background = Brushes.WhiteSmoke,
-                    CornerRadius = new CornerRadius(10),
-                    Padding = new Thickness(15, 15, 15, 15),
-                    Margin = new Thickness(0, 0, 0, 10),
-                    BorderBrush = Brushes.LightGray,
-                    BorderThickness = new Thickness(1, 1, 1, 1)
-                };
-
-                var stack = new StackPanel();
-
-                // Название и цена
-                var headerPanel = new StackPanel();
-                headerPanel.Orientation = Orientation.Horizontal;
-
-                headerPanel.Children.Add(new TextBlock
-                {
-                    Text = product.Name,
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.Purple,
-                    VerticalAlignment = VerticalAlignment.Center
-                });
-
-                headerPanel.Children.Add(new TextBlock
-                {
-                    Text = $" - {product.Price}₽",
-                    FontSize = 14,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.Green,
-                    Margin = new Thickness(10, 0, 0, 0),
-                    VerticalAlignment = VerticalAlignment.Center
-                });
-
-                stack.Children.Add(headerPanel);
-
-                // Описание
-                stack.Children.Add(new TextBlock
-                {
-                    Text = product.Description,
-                    FontSize = 12,
-                    Margin = new Thickness(0, 5, 0, 10),
-                    Foreground = Brushes.Gray
-                });
-
-                // Кнопка покупки
-                var buyButton = CreateSmallButton($"Купить ({product.Amount}🥕)", Brushes.Purple);
-                buyButton.Click += (s, e) =>
-                {
-                    if (balance >= product.Price)
-                    {
-                        balance -= product.Price;
-                        foodCurrency += product.Amount;
-
-                        // Бонус для сюрприз-пакета
-                        if (product.Name.Contains("Сюрприз"))
-                        {
-                            int bonus = random.Next(5, 20);
-                            foodCurrency += bonus;
-                            MessageBox.Show($"Вы купили {product.Name}!\nПолучено: {product.Amount}🥕\nБонус: +{bonus}🥕\nИтого: {product.Amount + bonus}🥕",
-                                "Покупка + бонус!", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Вы купили {product.Name}!\nПолучено: {product.Amount}🥕",
-                                "Покупка совершена!", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-
-                        UpdateUI();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Недостаточно средств для покупки!", "Ошибка",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                };
-
-                stack.Children.Add(buyButton);
-                productCard.Child = stack;
-                mainPanel.Children.Add(productCard);
-            }
-
-            // Кнопка закрытия
-            var closeButton = CreateButton("Закрыть", Brushes.Gray);
-            closeButton.HorizontalAlignment = HorizontalAlignment.Center;
-            closeButton.Click += (s, e) => dialog.Close();
-
-            mainPanel.Children.Add(closeButton);
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
-        }
-
         // Вспомогательные методы
         private TextBlock CreateLabel(string text)
         {
@@ -1102,5 +1361,13 @@ namespace FinancialTamagotchi
             RewardAmount = rewardAmount;
             RewardClaimed = false;
         }
+    }
+
+    public class Transaction
+    {
+        public DateTime Date { get; set; }
+        public double Amount { get; set; }
+        public string Type { get; set; } // "Income" или "Expense"
+        public string Category { get; set; }
     }
 }
