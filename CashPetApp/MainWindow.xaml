@@ -9,7 +9,7 @@
 
     <Grid>
         <!-- Левая часть с питомцем -->
-        <Border Background="#FFF9E6" BorderBrush="#FFD699" BorderThickness="0,0,1,0" Margin="581,0,0,0">
+        <Border x:Name="PetSection" Background="#FFF9E6" BorderBrush="#FFD699" BorderThickness="0,0,1,0" Width="300" HorizontalAlignment="Left">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <!-- Питомец -->
                 <Border x:Name="PetBorder" Width="200" Height="200" Background="#FFE066" CornerRadius="100"
@@ -51,7 +51,7 @@
         </Border>
 
         <!-- Правая часть с кнопками -->
-        <Border Margin="0,5,424,5" Background="White">
+        <Border Margin="300,0,0,0" Background="White">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -59,7 +59,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Верхние 2 кнопки -->
-                <UniformGrid Grid.Row="0" Columns="2" Rows="1" Margin="40,95,40,0">
+                <UniformGrid Grid.Row="0" Columns="2" Rows="1" Margin="40,40,40,40">
                     <!-- Добавить трату -->
                     <Button x:Name="ExpenseButton" Margin="20,20,20,20" Click="ExpenseButton_Click">
                         <Button.Template>
@@ -94,7 +94,7 @@
                 </UniformGrid>
 
                 <!-- Нижние 2 кнопки -->
-                <UniformGrid Grid.Row="1" Columns="2" Rows="1" Margin="40,10,40,77">
+                <UniformGrid Grid.Row="1" Columns="2" Rows="1" Margin="40,40,40,40">
                     <!-- Мои цели -->
                     <Button x:Name="GoalsButton" Margin="20,20,20,20" Click="GoalsButton_Click">
                         <Button.Template>
@@ -134,17 +134,42 @@
         <Border Height="60" Background="#4CAF50" VerticalAlignment="Top">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Финансовый Тамагоччи" Foreground="White" FontSize="22" FontWeight="Bold"
-                           VerticalAlignment="Top" HorizontalAlignment="Left" Margin="390,13,0,0"/>
+                <!-- Профиль пользователя в левом верхнем углу -->
+                <Button x:Name="ProfileButton" Grid.Column="0" 
+                        Background="Transparent" BorderThickness="0"
+                        Margin="10,0,0,0" Click="ProfileButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="20">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Background="White" CornerRadius="20" Padding="10,5,10,5">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👤" FontSize="20" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="UserNameText" Text="Гость" FontSize="16" FontWeight="Bold" 
+                                           Foreground="#4CAF50" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Button>
+
+                <!-- Заголовок -->
+                <TextBlock Grid.Column="1" Text="Финансовый Тамагоччи" 
+                           Foreground="White" FontSize="22" FontWeight="Bold"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
                 <!-- Панель валют -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
                     <!-- Игровая валюта (корм) -->
-                    <Border Background="White" CornerRadius="15" Padding="10,5" Margin="0,0,10,0">
+                    <Border Background="White" CornerRadius="15" Padding="10,5,10,5" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🥕" FontSize="20" VerticalAlignment="Center"/>
                             <TextBlock x:Name="FoodCurrencyText" Text="100" FontSize="16" FontWeight="Bold" 
@@ -153,7 +178,7 @@
                     </Border>
 
                     <!-- Денежный баланс -->
-                    <Border Background="White" CornerRadius="15" Padding="10,5">
+                    <Border Background="White" CornerRadius="15" Padding="10,5,10,5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🍯" FontSize="20" VerticalAlignment="Center"/>
                             <TextBlock x:Name="BalanceText" Text="15 000.50 ₽" FontSize="16" FontWeight="Bold" 
