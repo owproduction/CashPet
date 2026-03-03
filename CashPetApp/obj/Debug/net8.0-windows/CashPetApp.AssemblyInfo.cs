@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CashPetApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3de069d818fdfc25b1bab518bed823bcaab02be2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3d8bc96127c1ccabe9473148bb8b06a98901c1c1")]
 [assembly: System.Reflection.AssemblyProductAttribute("CashPetApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CashPetApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

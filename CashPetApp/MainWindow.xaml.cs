@@ -47,8 +47,206 @@ namespace FinancialTamagotchi
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка инициализации: " + ex.Message);
+                ShowErrorDialog("Ошибка инициализации", ex.Message);
             }
+        }
+
+        // Метод для показа ошибок в красивом диалоге
+        private void ShowErrorDialog(string title, string message)
+        {
+            var dialog = new Window
+            {
+                Title = title,
+                Width = 350,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.SingleBorderWindow
+            };
+
+            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Иконка ошибки
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = "❌",
+                FontSize = 48,
+                Foreground = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Заголовок
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Сообщение об ошибке
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = message,
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            // Кнопка закрытия
+            var closeButton = new Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 35,
+                FontSize = 14,
+                Background = Brushes.Red,
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            closeButton.Click += (s, e) => dialog.Close();
+            mainPanel.Children.Add(closeButton);
+
+            dialog.Content = mainPanel;
+            dialog.ShowDialog();
+        }
+
+        // Метод для показа успешных операций
+        private void ShowSuccessDialog(string title, string message)
+        {
+            var dialog = new Window
+            {
+                Title = title,
+                Width = 350,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.SingleBorderWindow
+            };
+
+            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Иконка успеха
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = "✅",
+                FontSize = 48,
+                Foreground = Brushes.Green,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Заголовок
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Green,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Сообщение
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = message,
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            // Кнопка закрытия
+            var closeButton = new Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 35,
+                FontSize = 14,
+                Background = Brushes.Green,
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            closeButton.Click += (s, e) => dialog.Close();
+            mainPanel.Children.Add(closeButton);
+
+            dialog.Content = mainPanel;
+            dialog.ShowDialog();
+        }
+
+        // Метод для показа информационных сообщений
+        private void ShowInfoDialog(string title, string message)
+        {
+            var dialog = new Window
+            {
+                Title = title,
+                Width = 350,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.SingleBorderWindow
+            };
+
+            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Иконка информации
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = "ℹ️",
+                FontSize = 48,
+                Foreground = Brushes.DodgerBlue,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Заголовок
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.DodgerBlue,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Сообщение
+            mainPanel.Children.Add(new TextBlock
+            {
+                Text = message,
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            // Кнопка закрытия
+            var closeButton = new Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 35,
+                FontSize = 14,
+                Background = Brushes.DodgerBlue,
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            closeButton.Click += (s, e) => dialog.Close();
+            mainPanel.Children.Add(closeButton);
+
+            dialog.Content = mainPanel;
+            dialog.ShowDialog();
         }
 
         private async void ShowLoginDialog()
@@ -119,7 +317,7 @@ namespace FinancialTamagotchi
             {
                 if (string.IsNullOrWhiteSpace(nameBox.Text))
                 {
-                    MessageBox.Show("Введите никнейм!");
+                    ShowErrorDialog("Ошибка входа", "Введите никнейм!");
                     return;
                 }
 
@@ -146,13 +344,22 @@ namespace FinancialTamagotchi
                         }
                         else
                         {
-                            MessageBox.Show("Пользователь не найден. Зарегистрируйтесь.");
+                            ShowErrorDialog("Ошибка входа", "Пользователь не найден. Зарегистрируйтесь.");
                         }
                     }
+                    else
+                    {
+                        var errorJson = await response.Content.ReadAsStringAsync();
+                        ShowErrorDialog("Ошибка сервера", $"Код ошибки: {response.StatusCode}\n{errorJson}");
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен по адресу http://localhost:8000");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка входа: {ex.Message}");
+                    ShowErrorDialog("Ошибка входа", ex.Message);
                 }
             };
 
@@ -170,7 +377,7 @@ namespace FinancialTamagotchi
             {
                 if (string.IsNullOrWhiteSpace(nameBox.Text))
                 {
-                    MessageBox.Show("Введите никнейм!");
+                    ShowErrorDialog("Ошибка регистрации", "Введите никнейм!");
                     return;
                 }
 
@@ -197,19 +404,28 @@ namespace FinancialTamagotchi
                             PropertyNameCaseInsensitive = true
                         });
 
-                        MessageBox.Show($"Добро пожаловать, {currentUser.name}!");
+                        ShowSuccessDialog("Добро пожаловать!", $"Регистрация прошла успешно, {currentUser.name}!");
                         dialog.Close();
                         await LoadUserData();
                         StartHungerTimer();
                     }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        ShowErrorDialog("Ошибка регистрации", "Этот никнейм уже используется. Выберите другой.");
+                    }
                     else
                     {
-                        MessageBox.Show("Ошибка регистрации. Возможно, никнейм уже используется.");
+                        var errorJson = await response.Content.ReadAsStringAsync();
+                        ShowErrorDialog("Ошибка регистрации", $"Код ошибки: {response.StatusCode}\n{errorJson}");
                     }
+                }
+                catch (HttpRequestException)
+                {
+                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен по адресу http://localhost:8000");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка регистрации: {ex.Message}");
+                    ShowErrorDialog("Ошибка регистрации", ex.Message);
                 }
             };
 
@@ -335,7 +551,7 @@ namespace FinancialTamagotchi
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
+                ShowErrorDialog("Ошибка загрузки данных", ex.Message);
             }
         }
 
@@ -369,6 +585,24 @@ namespace FinancialTamagotchi
                         currentUser.pet_energy = status.pet_energy;
 
                         Dispatcher.Invoke(UpdateUI);
+
+                        // Показываем предупреждение если питомец голоден
+                        if (currentUser.pet_energy <= 20 && currentUser.pet_energy > 0)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ShowInfoDialog("Питомец голоден!",
+                                    $"Энергия питомца: {currentUser.pet_energy}%\nПокормите его скорее!");
+                            });
+                        }
+                        else if (currentUser.pet_energy <= 0)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ShowInfoDialog("Питомец уснул!",
+                                    "Питомец уснул от голода.\nПокормите его, чтобы разбудить!");
+                            });
+                        }
                     }
                 }
             }
@@ -512,8 +746,7 @@ namespace FinancialTamagotchi
         {
             if (currentUser.food_currency < 10)
             {
-                MessageBox.Show("Недостаточно корма! Добавьте доход, чтобы заработать корм.", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ShowErrorDialog("Недостаточно корма", "У вас недостаточно корма! Добавьте доход, чтобы заработать корм.");
                 return;
             }
 
@@ -552,13 +785,26 @@ namespace FinancialTamagotchi
                             message += $"\nБонус: +{result.bonus}🥕";
                         }
 
-                        MessageBox.Show(message, "Кормление", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ShowSuccessDialog("Кормление успешно!", message);
                     }
                 }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    var errorJson = await response.Content.ReadAsStringAsync();
+                    ShowErrorDialog("Ошибка кормления", errorJson.Replace("\"", ""));
+                }
+                else
+                {
+                    ShowErrorDialog("Ошибка кормления", "Произошла неизвестная ошибка при кормлении питомца.");
+                }
+            }
+            catch (HttpRequestException)
+            {
+                ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка кормления: {ex.Message}");
+                ShowErrorDialog("Ошибка кормления", ex.Message);
             }
         }
 
@@ -576,6 +822,25 @@ namespace FinancialTamagotchi
             };
 
             var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+
+            // Текущий баланс для информации
+            var balanceInfo = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 10, 10, 10),
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+
+            var balanceText = new TextBlock
+            {
+                Text = $"💰 Текущий баланс: {currentUser.current_balance:N2} ₽",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Green
+            };
+            balanceInfo.Child = balanceText;
+            mainPanel.Children.Add(balanceInfo);
 
             // Сумма
             mainPanel.Children.Add(CreateLabel("Сумма (₽):"));
@@ -623,8 +888,15 @@ namespace FinancialTamagotchi
             {
                 if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
                 {
-                    MessageBox.Show("Введите корректную сумму!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка ввода", "Введите корректную сумму!");
+                    return;
+                }
+
+                // Проверка на клиенте
+                if (amount > currentUser.current_balance)
+                {
+                    ShowErrorDialog("Недостаточно средств",
+                        $"У вас на балансе {currentUser.current_balance:N2} ₽, а вы пытаетесь потратить {amount:N2} ₽.\n\nПополните баланс или уменьшите сумму траты.");
                     return;
                 }
 
@@ -646,14 +918,26 @@ namespace FinancialTamagotchi
                     if (response.IsSuccessStatusCode)
                     {
                         await LoadUserData();
-                        MessageBox.Show($"Трата на {amount:N2}₽ добавлена!",
-                            "Успешно!", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ShowSuccessDialog("Трата добавлена!", $"Трата на {amount:N2}₽ успешно добавлена!");
                         dialog.Close();
                     }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        var errorJson = await response.Content.ReadAsStringAsync();
+                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                    }
+                    else
+                    {
+                        ShowErrorDialog("Ошибка", "Произошла ошибка при добавлении траты.");
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}");
+                    ShowErrorDialog("Ошибка", ex.Message);
                 }
             };
 
@@ -728,8 +1012,7 @@ namespace FinancialTamagotchi
             {
                 if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
                 {
-                    MessageBox.Show("Введите корректную сумму!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка ввода", "Введите корректную сумму!");
                     return;
                 }
 
@@ -752,14 +1035,27 @@ namespace FinancialTamagotchi
                     if (response.IsSuccessStatusCode)
                     {
                         await LoadUserData();
-                        MessageBox.Show($"Доход {amount:N2}₽ добавлен!\n\n🎉 Получено +10🥕",
-                            "Успешно!", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ShowSuccessDialog("Доход добавлен!",
+                            $"Доход {amount:N2}₽ успешно добавлен!\n\n🎉 Получено +10🥕 за доход!");
                         dialog.Close();
                     }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        var errorJson = await response.Content.ReadAsStringAsync();
+                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                    }
+                    else
+                    {
+                        ShowErrorDialog("Ошибка", "Произошла ошибка при добавлении дохода.");
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}");
+                    ShowErrorDialog("Ошибка", ex.Message);
                 }
             };
 
@@ -900,8 +1196,7 @@ namespace FinancialTamagotchi
                 }
                 else
                 {
-                    MessageBox.Show("Сначала добавьте цель!", "Информация",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    ShowInfoDialog("Информация", "Сначала добавьте цель!");
                 }
             };
 
@@ -1008,14 +1303,19 @@ namespace FinancialTamagotchi
                         if (response.IsSuccessStatusCode)
                         {
                             await LoadUserData();
-                            MessageBox.Show($"Получено {goal.reward_amount}🥕 за выполнение цели!",
-                                "Награда получена!", MessageBoxButton.OK, MessageBoxImage.Information);
+                            ShowSuccessDialog("Награда получена!",
+                                $"Получено {goal.reward_amount}🥕 за выполнение цели '{goal.name}'!");
                             await ShowGoalsDialog();
+                        }
+                        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                        {
+                            var errorJson = await response.Content.ReadAsStringAsync();
+                            ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Ошибка: {ex.Message}");
+                        ShowErrorDialog("Ошибка", ex.Message);
                     }
                 };
                 stack.Children.Add(claimButton);
@@ -1030,7 +1330,11 @@ namespace FinancialTamagotchi
             try
             {
                 var response = await client.GetAsync($"/transactions/stats/{currentUser.user_id}");
-                if (!response.IsSuccessStatusCode) return;
+                if (!response.IsSuccessStatusCode)
+                {
+                    ShowErrorDialog("Ошибка", "Не удалось загрузить статистику");
+                    return;
+                }
 
                 var json = await response.Content.ReadAsStringAsync();
                 var stats = JsonSerializer.Deserialize<StatsResponse>(json, new JsonSerializerOptions
@@ -1178,9 +1482,13 @@ namespace FinancialTamagotchi
                 dialog.Content = new ScrollViewer { Content = mainPanel };
                 dialog.ShowDialog();
             }
+            catch (HttpRequestException)
+            {
+                ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу для загрузки статистики.");
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки статистики: {ex.Message}");
+                ShowErrorDialog("Ошибка загрузки статистики", ex.Message);
             }
         }
 
@@ -1374,15 +1682,13 @@ namespace FinancialTamagotchi
             {
                 if (string.IsNullOrWhiteSpace(nameBox.Text))
                 {
-                    MessageBox.Show("Введите название цели!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка", "Введите название цели!");
                     return;
                 }
 
                 if (!double.TryParse(targetBox.Text, out double target) || target <= 0)
                 {
-                    MessageBox.Show("Введите корректную целевую сумму!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка", "Введите корректную целевую сумму!");
                     return;
                 }
 
@@ -1393,15 +1699,13 @@ namespace FinancialTamagotchi
 
                 if (current > target)
                 {
-                    MessageBox.Show("Текущая сумма не может превышать целевую!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка", "Текущая сумма не может превышать целевую!");
                     return;
                 }
 
                 if (!datePicker.SelectedDate.HasValue)
                 {
-                    MessageBox.Show("Выберите дату дедлайна!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка", "Выберите дату дедлайна!");
                     return;
                 }
 
@@ -1429,16 +1733,20 @@ namespace FinancialTamagotchi
 
                     if (response.IsSuccessStatusCode)
                     {
-                        MessageBox.Show($"Цель добавлена!\nНаграда за выполнение: {reward}🥕",
-                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ShowSuccessDialog("Цель добавлена!",
+                            $"Цель '{nameBox.Text}' успешно добавлена!\nНаграда за выполнение: {reward}🥕");
                         await LoadUserData();
                         dialog.Close();
                         await ShowGoalsDialog();
                     }
+                    else
+                    {
+                        ShowErrorDialog("Ошибка", "Не удалось добавить цель.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}");
+                    ShowErrorDialog("Ошибка", ex.Message);
                 }
             };
 
@@ -1467,6 +1775,25 @@ namespace FinancialTamagotchi
 
             var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
 
+            // Текущий баланс
+            var balanceInfo = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 10, 10, 10),
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+
+            var balanceText = new TextBlock
+            {
+                Text = $"💰 Текущий баланс: {currentUser.current_balance:N2} ₽",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Green
+            };
+            balanceInfo.Child = balanceText;
+            mainPanel.Children.Add(balanceInfo);
+
             // Выбор цели
             mainPanel.Children.Add(CreateLabel("Выберите цель:"));
 
@@ -1486,8 +1813,7 @@ namespace FinancialTamagotchi
 
             if (goalsCombo.Items.Count == 0)
             {
-                MessageBox.Show("Нет активных целей!", "Информация",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                ShowInfoDialog("Информация", "Нет активных целей для пополнения!");
                 dialog.Close();
                 return;
             }
@@ -1520,8 +1846,14 @@ namespace FinancialTamagotchi
             {
                 if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
                 {
-                    MessageBox.Show("Введите корректную сумму!", "Ошибка",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowErrorDialog("Ошибка", "Введите корректную сумму!");
+                    return;
+                }
+
+                if (amount > currentUser.current_balance)
+                {
+                    ShowErrorDialog("Недостаточно средств",
+                        $"У вас на балансе {currentUser.current_balance:N2} ₽");
                     return;
                 }
 
@@ -1545,22 +1877,31 @@ namespace FinancialTamagotchi
 
                         if (result != null && result.bonus > 0)
                         {
-                            MessageBox.Show($"Цель пополнена на {amount:N2}₽!\nБонус: +{result.bonus}🥕",
-                                "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            ShowSuccessDialog("Цель пополнена!",
+                                $"Цель '{selectedGoal.name}' пополнена на {amount:N2}₽!\nБонус: +{result.bonus}🥕 за активность!");
                         }
                         else
                         {
-                            MessageBox.Show($"Цель пополнена на {amount:N2}₽!",
-                                "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            ShowSuccessDialog("Цель пополнена!",
+                                $"Цель '{selectedGoal.name}' пополнена на {amount:N2}₽!");
                         }
 
                         dialog.Close();
                         await ShowGoalsDialog();
                     }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        var errorJson = await response.Content.ReadAsStringAsync();
+                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                    }
+                    else
+                    {
+                        ShowErrorDialog("Ошибка", "Не удалось пополнить цель.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка: {ex.Message}");
+                    ShowErrorDialog("Ошибка", ex.Message);
                 }
             };
 
