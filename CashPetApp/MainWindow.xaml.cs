@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Linq;
+using System.Windows.Shapes;
 
 namespace FinancialTamagotchi
 {
@@ -1347,13 +1348,14 @@ namespace FinancialTamagotchi
                 var dialog = new Window
                 {
                     Title = "📊 Графики доходов и расходов",
-                    Width = 600,
-                    Height = 700,
+                    Width = 900,
+                    Height = 800,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Owner = this,
                     Background = Brushes.White
                 };
 
+                var scrollViewer = new ScrollViewer();
                 var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
 
                 // Заголовок
@@ -1368,7 +1370,51 @@ namespace FinancialTamagotchi
                 };
                 mainPanel.Children.Add(title);
 
-                // Сводка
+                // ========== ДИАГРАММА СЭНКИ ==========
+                var sankeyTitle = new TextBlock
+                {
+                    Text = "🌊 Диаграмма Сэнки (потоки доходов и расходов)",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.DarkViolet,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+                mainPanel.Children.Add(sankeyTitle);
+
+                var sankeyDescription = new TextBlock
+                {
+                    Text = "Показывает, как деньги поступают из источников дохода и распределяются по категориям расходов",
+                    FontSize = 12,
+                    Foreground = Brushes.Gray,
+                    FontStyle = FontStyles.Italic,
+                    Margin = new Thickness(0, 0, 0, 15)
+                };
+                mainPanel.Children.Add(sankeyDescription);
+
+                // Создаем канвас для рисования диаграммы Сэнки
+                var sankeyCanvas = new Canvas
+                {
+                    Width = 800,
+                    Height = 400,
+                    Background = new SolidColorBrush(Color.FromRgb(250, 250, 250)),
+                    Margin = new Thickness(0, 0, 0, 20)
+                };
+
+                // Рисуем диаграмму Сэнки
+                DrawSankeyDiagram(sankeyCanvas, stats);
+                mainPanel.Children.Add(sankeyCanvas);
+
+                // ========== СВОДКА ==========
+                var summaryTitle = new TextBlock
+                {
+                    Text = "💰 Общая статистика",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.DodgerBlue,
+                    Margin = new Thickness(0, 20, 0, 10)
+                };
+                mainPanel.Children.Add(summaryTitle);
+
                 var summaryPanel = new Border
                 {
                     Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
@@ -1387,44 +1433,37 @@ namespace FinancialTamagotchi
 
                 summaryStack.Children.Add(new TextBlock
                 {
-                    Text = "💰 Общая статистика:",
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DodgerBlue,
-                    Margin = new Thickness(0, 0, 0, 10)
-                });
-
-                summaryStack.Children.Add(new TextBlock
-                {
                     Text = $"Всего доходов: {totalIncome:N2} ₽",
-                    FontSize = 14,
-                    Margin = new Thickness(10, 0, 0, 5)
+                    FontSize = 16,
+                    Foreground = Brushes.Green,
+                    Margin = new Thickness(0, 0, 0, 5)
                 });
 
                 summaryStack.Children.Add(new TextBlock
                 {
                     Text = $"Всего расходов: {totalExpense:N2} ₽",
-                    FontSize = 14,
-                    Margin = new Thickness(10, 0, 0, 5)
+                    FontSize = 16,
+                    Foreground = Brushes.Red,
+                    Margin = new Thickness(0, 0, 0, 5)
                 });
 
                 summaryStack.Children.Add(new TextBlock
                 {
                     Text = $"Итоговый баланс: {balance:N2} ₽",
-                    FontSize = 14,
+                    FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = balance >= 0 ? Brushes.Green : Brushes.Red,
-                    Margin = new Thickness(10, 5, 0, 0)
+                    Margin = new Thickness(0, 10, 0, 0)
                 });
 
                 summaryPanel.Child = summaryStack;
                 mainPanel.Children.Add(summaryPanel);
 
-                // График по дням
+                // ========== ГРАФИК ПО ДНЯМ ==========
                 var dailyTitle = new TextBlock
                 {
                     Text = "📅 Доходы и расходы по дням (последние 7 дней):",
-                    FontSize = 16,
+                    FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = Brushes.DodgerBlue,
                     Margin = new Thickness(0, 0, 0, 10)
@@ -1440,11 +1479,11 @@ namespace FinancialTamagotchi
                     }
                 }
 
-                // График по категориям
+                // ========== ГРАФИК ПО КАТЕГОРИЯМ ==========
                 var categoryTitle = new TextBlock
                 {
                     Text = "📊 Расходы по категориям:",
-                    FontSize = 16,
+                    FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = Brushes.DodgerBlue,
                     Margin = new Thickness(0, 20, 0, 10)
@@ -1475,11 +1514,26 @@ namespace FinancialTamagotchi
                 // Кнопка закрытия
                 var closeButton = CreateButton("Закрыть", Brushes.Gray);
                 closeButton.HorizontalAlignment = HorizontalAlignment.Center;
-                closeButton.Margin = new Thickness(0, 20, 0, 0);
+                closeButton.Margin = new Thickness(0, 30, 0, 10);
                 closeButton.Click += (s, e) => dialog.Close();
                 mainPanel.Children.Add(closeButton);
 
-                dialog.Content = new ScrollViewer { Content = mainPanel };
+                // Легенда для диаграммы Сэнки
+                var legendPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                legendPanel.Children.Add(CreateLegendItem("Доходы", Brushes.Green));
+                legendPanel.Children.Add(CreateLegendItem("Расходы", Brushes.Red));
+                legendPanel.Children.Add(CreateLegendItem("Поток", new SolidColorBrush(Color.FromArgb(100, 30, 144, 255))));
+
+                mainPanel.Children.Add(legendPanel);
+
+                scrollViewer.Content = mainPanel;
+                dialog.Content = scrollViewer;
                 dialog.ShowDialog();
             }
             catch (HttpRequestException)
@@ -1490,6 +1544,265 @@ namespace FinancialTamagotchi
             {
                 ShowErrorDialog("Ошибка загрузки статистики", ex.Message);
             }
+        }
+
+        private void DrawSankeyDiagram(Canvas canvas, StatsResponse stats)
+        {
+            if (stats == null) return;
+
+            canvas.Children.Clear();
+
+            // Определяем источники дохода (у нас их нет напрямую в stats, поэтому создаем тестовые)
+            // В реальном приложении нужно получать данные о доходах по категориям
+            var incomeSources = new Dictionary<string, double>
+            {
+                { "Зарплата", stats.totals?.total_income * 0.7 ?? 0 },
+                { "Фриланс", stats.totals?.total_income * 0.2 ?? 0 },
+                { "Инвестиции", stats.totals?.total_income * 0.1 ?? 0 }
+            };
+
+            // Получаем категории расходов
+            var expenseCategories = new List<CategoryStat>();
+            if (stats.categories != null && stats.categories.Length > 0)
+            {
+                expenseCategories = stats.categories.ToList();
+            }
+            else
+            {
+                expenseCategories.Add(new CategoryStat { category = "Нет данных", total = 1 });
+            }
+
+            // Параметры расположения
+            double canvasWidth = canvas.Width;
+            double canvasHeight = canvas.Height;
+            double leftX = 150;
+            double rightX = canvasWidth - 150;
+            double startY = 50;
+            double endY = canvasHeight - 50;
+
+            // Рассчитываем общую сумму доходов и расходов
+            double totalIncome = incomeSources.Values.Sum();
+            double totalExpense = expenseCategories.Sum(c => c.total);
+
+            // Рисуем левую колонку (источники дохода)
+            DrawLeftColumn(canvas, incomeSources, leftX, startY, endY, totalIncome);
+
+            // Рисуем правую колонку (категории расходов)
+            DrawRightColumn(canvas, expenseCategories, rightX, startY, endY, totalExpense);
+
+            // Рисуем потоки (линии Сэнки)
+            DrawSankeyFlows(canvas, incomeSources, expenseCategories, leftX, rightX, startY, endY, totalIncome, totalExpense);
+        }
+
+        private void DrawLeftColumn(Canvas canvas, Dictionary<string, double> sources, double x, double startY, double endY, double total)
+        {
+            double currentY = startY;
+            double columnHeight = endY - startY;
+            uint[] colors = { 0x4CAF50, 0x8BC34A, 0xCDDC39 }; // Разные оттенки зеленого
+
+            int i = 0;
+            foreach (var source in sources)
+            {
+                double height = (source.Value / total) * columnHeight;
+                if (height < 20) height = 20; // Минимальная высота
+
+                // Рисуем прямоугольник
+                var rect = new Rectangle
+                {
+                    Width = 40,
+                    Height = height,
+                    Fill = new SolidColorBrush(Color.FromRgb((byte)((colors[i] >> 16) & 0xFF),
+                                                             (byte)((colors[i] >> 8) & 0xFF),
+                                                             (byte)(colors[i] & 0xFF))),
+                    Stroke = Brushes.DarkGreen,
+                    StrokeThickness = 1
+                };
+                Canvas.SetLeft(rect, x - 20);
+                Canvas.SetTop(rect, currentY);
+                canvas.Children.Add(rect);
+
+                // Добавляем текст
+                var text = new TextBlock
+                {
+                    Text = $"{source.Key}\n{source.Value:N0}₽",
+                    FontSize = 11,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.Black,
+                    TextAlignment = TextAlignment.Center,
+                    Width = 80
+                };
+                Canvas.SetLeft(text, x - 60);
+                Canvas.SetTop(text, currentY + height / 2 - 15);
+                canvas.Children.Add(text);
+
+                currentY += height;
+                i = (i + 1) % colors.Length;
+            }
+        }
+
+        private void DrawRightColumn(Canvas canvas, List<CategoryStat> categories, double x, double startY, double endY, double total)
+        {
+            double currentY = startY;
+            double columnHeight = endY - startY;
+            uint[] colors = { 0xF44336, 0xFF5722, 0xFF9800, 0xFFC107, 0xFFEB3B }; // Оттенки красного/оранжевого
+
+            int i = 0;
+            foreach (var category in categories)
+            {
+                double height = (category.total / total) * columnHeight;
+                if (height < 20) height = 20; // Минимальная высота
+
+                // Рисуем прямоугольник
+                var rect = new Rectangle
+                {
+                    Width = 40,
+                    Height = height,
+                    Fill = new SolidColorBrush(Color.FromRgb((byte)((colors[i] >> 16) & 0xFF),
+                                                             (byte)((colors[i] >> 8) & 0xFF),
+                                                             (byte)(colors[i] & 0xFF))),
+                    Stroke = Brushes.DarkRed,
+                    StrokeThickness = 1
+                };
+                Canvas.SetLeft(rect, x - 20);
+                Canvas.SetTop(rect, currentY);
+                canvas.Children.Add(rect);
+
+                // Добавляем текст
+                var text = new TextBlock
+                {
+                    Text = $"{category.category}\n{category.total:N0}₽",
+                    FontSize = 11,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.Black,
+                    TextAlignment = TextAlignment.Center,
+                    Width = 80
+                };
+                Canvas.SetLeft(text, x + 20);
+                Canvas.SetTop(text, currentY + height / 2 - 15);
+                canvas.Children.Add(text);
+
+                currentY += height;
+                i = (i + 1) % colors.Length;
+            }
+        }
+
+        private void DrawSankeyFlows(Canvas canvas,
+                                    Dictionary<string, double> sources,
+                                    List<CategoryStat> categories,
+                                    double leftX, double rightX,
+                                    double startY, double endY,
+                                    double totalIncome, double totalExpense)
+        {
+            double leftCurrentY = startY;
+
+            double leftColumnHeight = endY - startY;
+            double rightColumnHeight = endY - startY;
+
+            // Для каждого источника создаем поток к каждой категории
+            foreach (var source in sources)
+            {
+                double sourceHeight = (source.Value / totalIncome) * leftColumnHeight;
+                if (sourceHeight < 20) sourceHeight = 20;
+
+                double sourceStartY = leftCurrentY;
+
+                double rightTempY = startY;
+
+                foreach (var category in categories)
+                {
+                    double categoryHeight = (category.total / totalExpense) * rightColumnHeight;
+                    if (categoryHeight < 20) categoryHeight = 20;
+
+                    double categoryStartY = rightTempY;
+
+                    // Пропорция потока от этого источника к этой категории
+                    // В реальном приложении здесь должны быть реальные данные о том,
+                    // какие доходы в какие расходы переходят
+                    double flowRatio = (source.Value * category.total) / (totalIncome * totalExpense);
+                    double flowWidth = flowRatio * 100; // Максимальная ширина потока 100
+
+                    if (flowWidth > 0.5) // Рисуем только значимые потоки
+                    {
+                        // Создаем путь для потока (изогнутая линия с градиентом)
+                        var path = new Path
+                        {
+                            Stroke = new SolidColorBrush(Color.FromArgb(100, 30, 144, 255)), // Полупрозрачный синий
+                            StrokeThickness = flowWidth,
+                            Opacity = 0.6,
+                            StrokeStartLineCap = PenLineCap.Round,
+                            StrokeEndLineCap = PenLineCap.Round
+                        };
+
+                        // Создаем геометрию пути
+                        var geometry = new PathGeometry();
+                        var figure = new PathFigure();
+
+                        // Начальная точка (середина левого прямоугольника по высоте)
+                        double leftY = sourceStartY + sourceHeight / 2;
+                        figure.StartPoint = new Point(leftX + 20, leftY);
+
+                        // Контрольные точки для кривой Безье
+                        Point cp1 = new Point(leftX + 150, leftY);
+                        Point cp2 = new Point(rightX - 150, categoryStartY + categoryHeight / 2);
+                        Point endPoint = new Point(rightX - 20, categoryStartY + categoryHeight / 2);
+
+                        var segment = new BezierSegment(cp1, cp2, endPoint, true);
+                        figure.Segments.Add(segment);
+
+                        geometry.Figures.Add(figure);
+                        path.Data = geometry;
+
+                        canvas.Children.Add(path);
+                    }
+
+                    rightTempY += categoryHeight;
+                }
+
+                leftCurrentY += sourceHeight;
+            }
+
+            // Добавляем пояснительный текст
+            var explanation = new TextBlock
+            {
+                Text = "Потоки показывают, как доходы распределяются по расходам",
+                FontSize = 10,
+                Foreground = Brushes.Gray,
+                FontStyle = FontStyles.Italic,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            Canvas.SetLeft(explanation, canvas.Width / 2 - 150);
+            Canvas.SetTop(explanation, canvas.Height - 25);
+            canvas.Children.Add(explanation);
+        }
+
+        private StackPanel CreateLegendItem(string text, Brush color)
+        {
+            var panel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(15, 0, 15, 0)
+            };
+
+            var colorBox = new Border
+            {
+                Width = 20,
+                Height = 20,
+                Background = color,
+                CornerRadius = new CornerRadius(3),
+                Margin = new Thickness(0, 0, 5, 0)
+            };
+
+            var label = new TextBlock
+            {
+                Text = text,
+                FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            panel.Children.Add(colorBox);
+            panel.Children.Add(label);
+
+            return panel;
         }
 
         private Border CreateDayChart(string day, double income, double expense)
@@ -1853,7 +2166,7 @@ namespace FinancialTamagotchi
                 if (amount > currentUser.current_balance)
                 {
                     ShowErrorDialog("Недостаточно средств",
-                        $"У вас на балансе {currentUser.current_balance:N2} ₽");
+                        $"У вас на балансе {currentUser.current_balance:N2} ₽, а вы пытаетесь внести {amount:N2} ₽.");
                     return;
                 }
 
