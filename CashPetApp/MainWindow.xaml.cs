@@ -5,252 +5,140 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Linq;
-using System.Windows.Shapes;
 
 namespace FinancialTamagotchi
 {
     public partial class MainWindow : Window
     {
-        // Текущий пользователь
-        private User currentUser;
-        private List<FinancialGoal> goals = new List<FinancialGoal>();
+        private User? currentUser;
+        private List<Goal> goals = new List<Goal>();
         private List<Transaction> transactions = new List<Transaction>();
-        private Random random = new Random();
-
-        // HTTP клиент для API
         private HttpClient client = new HttpClient();
-        private DispatcherTimer hungerTimer;
-        private int secondsWithoutFood = 0;
+        private DispatcherTimer? hungerTimer;
+        private DispatcherTimer? notificationTimer;
+        private DoubleAnimation? menuAnimation;
+        private bool isMenuExpanded = false;
 
         public MainWindow()
         {
+            InitializeComponent();
+
+            client.BaseAddress = new Uri("http://localhost:8000");
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(
+                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            // Установка фоновой картинки
             try
             {
-                InitializeComponent();
+                string imagePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "back.png");
 
-                // Настройка HTTP клиента
-                client.BaseAddress = new Uri("http://localhost:8000");
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                // Показываем окно входа после загрузки окна
-                this.Loaded += (s, e) =>
+                if (!System.IO.File.Exists(imagePath))
                 {
-                    ShowLoginDialog();
-                };
+                    imagePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "back.png");
+                }
 
-                SetupButtonEffects();
-                StartPetAnimation();
+                if (System.IO.File.Exists(imagePath))
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(imagePath);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+
+                    BackgroundImage.Source = bitmap;
+                    BackgroundImage.Stretch = Stretch.Fill;
+                    BackgroundImage.Opacity = 1; // Полностью непрозрачная картинка
+                }
             }
             catch (Exception ex)
             {
-                ShowErrorDialog("Ошибка инициализации", ex.Message);
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки фона: {ex.Message}");
+            }
+
+            this.Loaded += async (s, e) =>
+            {
+                await ShowLoginDialogAsync();
+            };
+
+            SetupButtonEffects();
+            StartPetAnimation();
+            InitializeMenuAnimation();
+            UpdateMenuButtonsVisibility(false);
+        }
+
+        private void InitializeMenuAnimation()
+        {
+            menuAnimation = new DoubleAnimation();
+            menuAnimation.Duration = TimeSpan.FromMilliseconds(250);
+            menuAnimation.EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+            menuAnimation.Completed += (s, e) => UpdateMenuButtonsVisibility(isMenuExpanded);
+        }
+
+        private void MenuToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (menuAnimation == null) return;
+
+            if (isMenuExpanded)
+            {
+                menuAnimation.To = 80;
+                SideMenuBorder.BeginAnimation(Border.WidthProperty, menuAnimation);
+                isMenuExpanded = false;
+            }
+            else
+            {
+                menuAnimation.To = 260;
+                SideMenuBorder.BeginAnimation(Border.WidthProperty, menuAnimation);
+                isMenuExpanded = true;
             }
         }
 
-        // Метод для показа ошибок в красивом диалоге
-        private void ShowErrorDialog(string title, string message)
+        private void UpdateMenuButtonsVisibility(bool isExpanded)
         {
-            var dialog = new Window
-            {
-                Title = title,
-                Width = 350,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White,
-                WindowStyle = WindowStyle.SingleBorderWindow
-            };
+            var visibility = isExpanded ? Visibility.Visible : Visibility.Collapsed;
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Иконка ошибки
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = "❌",
-                FontSize = 48,
-                Foreground = Brushes.Red,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            // Заголовок
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = title,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Red,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            // Сообщение об ошибке
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = message,
-                FontSize = 14,
-                TextWrapping = TextWrapping.Wrap,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            // Кнопка закрытия
-            var closeButton = new Button
-            {
-                Content = "OK",
-                Width = 100,
-                Height = 35,
-                FontSize = 14,
-                Background = Brushes.Red,
-                Foreground = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            closeButton.Click += (s, e) => dialog.Close();
-            mainPanel.Children.Add(closeButton);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
+            if (ExpenseText != null) ExpenseText.Visibility = visibility;
+            if (IncomeText != null) IncomeText.Visibility = visibility;
+            if (GoalsText != null) GoalsText.Visibility = visibility;
+            if (ChartsText != null) ChartsText.Visibility = visibility;
+            if (SettingsText != null) SettingsText.Visibility = visibility;
+            if (ProfileText != null) ProfileText.Visibility = visibility;
         }
 
-        // Метод для показа успешных операций
-        private void ShowSuccessDialog(string title, string message)
+        private void CloseNotificationButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Window
-            {
-                Title = title,
-                Width = 350,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White,
-                WindowStyle = WindowStyle.SingleBorderWindow
-            };
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Иконка успеха
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = "✅",
-                FontSize = 48,
-                Foreground = Brushes.Green,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            // Заголовок
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = title,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Green,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            // Сообщение
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = message,
-                FontSize = 14,
-                TextWrapping = TextWrapping.Wrap,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            // Кнопка закрытия
-            var closeButton = new Button
-            {
-                Content = "OK",
-                Width = 100,
-                Height = 35,
-                FontSize = 14,
-                Background = Brushes.Green,
-                Foreground = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            closeButton.Click += (s, e) => dialog.Close();
-            mainPanel.Children.Add(closeButton);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
+            NotificationBorder.Visibility = Visibility.Collapsed;
         }
 
-        // Метод для показа информационных сообщений
-        private void ShowInfoDialog(string title, string message)
+        private void ShowNotification(string message)
         {
-            var dialog = new Window
+            Dispatcher.Invoke(() =>
             {
-                Title = title,
-                Width = 350,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White,
-                WindowStyle = WindowStyle.SingleBorderWindow
-            };
+                NotificationText.Text = message;
+                NotificationBorder.Visibility = Visibility.Visible;
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Иконка информации
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = "ℹ️",
-                FontSize = 48,
-                Foreground = Brushes.DodgerBlue,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
+                if (notificationTimer != null)
+                {
+                    notificationTimer.Stop();
+                }
+                notificationTimer = new DispatcherTimer();
+                notificationTimer.Interval = TimeSpan.FromSeconds(5);
+                notificationTimer.Tick += (s, e) =>
+                {
+                    NotificationBorder.Visibility = Visibility.Collapsed;
+                    notificationTimer.Stop();
+                };
+                notificationTimer.Start();
             });
-
-            // Заголовок
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = title,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.DodgerBlue,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            // Сообщение
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = message,
-                FontSize = 14,
-                TextWrapping = TextWrapping.Wrap,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            // Кнопка закрытия
-            var closeButton = new Button
-            {
-                Content = "OK",
-                Width = 100,
-                Height = 35,
-                FontSize = 14,
-                Background = Brushes.DodgerBlue,
-                Foreground = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            closeButton.Click += (s, e) => dialog.Close();
-            mainPanel.Children.Add(closeButton);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
         }
 
-        private async void ShowLoginDialog()
+        private async Task ShowLoginDialogAsync()
         {
             var dialog = new Window
             {
@@ -265,21 +153,18 @@ namespace FinancialTamagotchi
                 ShowInTaskbar = false
             };
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+            var mainPanel = new StackPanel { Margin = new Thickness(20) };
 
-            // Заголовок
-            var title = new TextBlock
+            mainPanel.Children.Add(new TextBlock
             {
                 Text = "🐹 Финансовый Тамагоччи",
                 FontSize = 24,
                 FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Green,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(title);
+            });
 
-            // Имя пользователя
             mainPanel.Children.Add(new TextBlock
             {
                 Text = "Ваш никнейм:",
@@ -291,13 +176,12 @@ namespace FinancialTamagotchi
             {
                 FontSize = 16,
                 Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
+                Padding = new Thickness(10),
                 Margin = new Thickness(0, 0, 0, 20),
                 Text = "Игрок"
             };
             mainPanel.Children.Add(nameBox);
 
-            // Кнопки
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -310,21 +194,20 @@ namespace FinancialTamagotchi
                 Width = 120,
                 Height = 40,
                 FontSize = 16,
-                Background = Brushes.LimeGreen,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")),
                 Foreground = Brushes.White,
-                Margin = new Thickness(5, 5, 5, 5)
+                Margin = new Thickness(5)
             };
             loginButton.Click += async (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(nameBox.Text))
                 {
-                    ShowErrorDialog("Ошибка входа", "Введите никнейм!");
+                    MessageBox.Show("Введите никнейм!");
                     return;
                 }
 
                 try
                 {
-                    // Ищем пользователя по имени
                     var response = await client.GetAsync("/users/");
                     if (response.IsSuccessStatusCode)
                     {
@@ -342,25 +225,17 @@ namespace FinancialTamagotchi
                             dialog.Close();
                             await LoadUserData();
                             StartHungerTimer();
+                            ShowNotification($"Добро пожаловать, {currentUser.name}!");
                         }
                         else
                         {
-                            ShowErrorDialog("Ошибка входа", "Пользователь не найден. Зарегистрируйтесь.");
+                            MessageBox.Show("Пользователь не найден. Зарегистрируйтесь.");
                         }
                     }
-                    else
-                    {
-                        var errorJson = await response.Content.ReadAsStringAsync();
-                        ShowErrorDialog("Ошибка сервера", $"Код ошибки: {response.StatusCode}\n{errorJson}");
-                    }
-                }
-                catch (HttpRequestException)
-                {
-                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен по адресу http://localhost:8000");
                 }
                 catch (Exception ex)
                 {
-                    ShowErrorDialog("Ошибка входа", ex.Message);
+                    MessageBox.Show($"Ошибка входа: {ex.Message}\n\nУбедитесь, что сервер запущен на http://localhost:8000");
                 }
             };
 
@@ -370,15 +245,15 @@ namespace FinancialTamagotchi
                 Width = 120,
                 Height = 40,
                 FontSize = 16,
-                Background = Brushes.DodgerBlue,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2196F3")),
                 Foreground = Brushes.White,
-                Margin = new Thickness(5, 5, 5, 5)
+                Margin = new Thickness(5)
             };
             registerButton.Click += async (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(nameBox.Text))
                 {
-                    ShowErrorDialog("Ошибка регистрации", "Введите никнейм!");
+                    MessageBox.Show("Введите никнейм!");
                     return;
                 }
 
@@ -387,9 +262,10 @@ namespace FinancialTamagotchi
                     var newUser = new
                     {
                         name = nameBox.Text,
-                        email = nameBox.Text + "@game.local", // Генерируем уникальный email
+                        email = nameBox.Text + "@game.local",
                         food_currency = 100,
-                        pet_energy = 80
+                        pet_energy = 80,
+                        current_balance = 15000
                     };
 
                     var json = JsonSerializer.Serialize(newUser);
@@ -405,28 +281,21 @@ namespace FinancialTamagotchi
                             PropertyNameCaseInsensitive = true
                         });
 
-                        ShowSuccessDialog("Добро пожаловать!", $"Регистрация прошла успешно, {currentUser.name}!");
+                        MessageBox.Show($"Добро пожаловать, {currentUser!.name}!");
                         dialog.Close();
                         await LoadUserData();
                         StartHungerTimer();
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        ShowErrorDialog("Ошибка регистрации", "Этот никнейм уже используется. Выберите другой.");
+                        ShowNotification($"Создан новый профиль: {currentUser.name}!");
                     }
                     else
                     {
-                        var errorJson = await response.Content.ReadAsStringAsync();
-                        ShowErrorDialog("Ошибка регистрации", $"Код ошибки: {response.StatusCode}\n{errorJson}");
+                        var error = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Ошибка регистрации: {error}");
                     }
-                }
-                catch (HttpRequestException)
-                {
-                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен по адресу http://localhost:8000");
                 }
                 catch (Exception ex)
                 {
-                    ShowErrorDialog("Ошибка регистрации", ex.Message);
+                    MessageBox.Show($"Ошибка регистрации: {ex.Message}");
                 }
             };
 
@@ -438,139 +307,20 @@ namespace FinancialTamagotchi
             dialog.ShowDialog();
         }
 
-        private void ProfileButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentUser != null)
-            {
-                ShowProfileDialog();
-            }
-        }
-
-        private void ShowProfileDialog()
-        {
-            var dialog = new Window
-            {
-                Title = "👤 Профиль",
-                Width = 300,
-                Height = 250,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White
-            };
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = "Ваш профиль",
-                FontSize = 20,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.DodgerBlue,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = $"👤 Никнейм: {currentUser.name}",
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = $"🍯 Баланс: {currentUser.current_balance:N2} ₽",
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 0, 10)
-            });
-
-            mainPanel.Children.Add(new TextBlock
-            {
-                Text = $"🥕 Корм: {currentUser.food_currency}",
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 0, 20)
-            });
-
-            var closeButton = CreateButton("Закрыть", Brushes.Gray);
-            closeButton.Click += (s, e) => dialog.Close();
-            mainPanel.Children.Add(closeButton);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
-        }
-
-        private async Task LoadUserData()
-        {
-            try
-            {
-                // Загружаем данные пользователя
-                var userResponse = await client.GetAsync($"/users/{currentUser.user_id}");
-                if (userResponse.IsSuccessStatusCode)
-                {
-                    var json = await userResponse.Content.ReadAsStringAsync();
-                    currentUser = JsonSerializer.Deserialize<User>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                }
-
-                // Загружаем цели
-                var goalsResponse = await client.GetAsync($"/goals/?user_id={currentUser.user_id}");
-                if (goalsResponse.IsSuccessStatusCode)
-                {
-                    var json = await goalsResponse.Content.ReadAsStringAsync();
-                    goals = JsonSerializer.Deserialize<List<FinancialGoal>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new List<FinancialGoal>();
-                }
-
-                // Загружаем транзакции
-                var transResponse = await client.GetAsync($"/transactions/?user_id={currentUser.user_id}&days=30");
-                if (transResponse.IsSuccessStatusCode)
-                {
-                    var json = await transResponse.Content.ReadAsStringAsync();
-                    var transList = JsonSerializer.Deserialize<List<TransactionDto>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-                    if (transList != null)
-                    {
-                        transactions = transList.Select(t => new Transaction
-                        {
-                            Date = t.date,
-                            Amount = t.amount,
-                            Type = t.type,
-                            Category = t.category
-                        }).ToList();
-                    }
-                }
-
-                UpdateUI();
-            }
-            catch (Exception ex)
-            {
-                ShowErrorDialog("Ошибка загрузки данных", ex.Message);
-            }
-        }
-
         private void StartHungerTimer()
         {
             hungerTimer = new DispatcherTimer();
-            hungerTimer.Interval = TimeSpan.FromSeconds(30); // Каждые 30 секунд
+            hungerTimer.Interval = TimeSpan.FromSeconds(30);
             hungerTimer.Tick += HungerTimer_Tick;
             hungerTimer.Start();
         }
 
-        private async void HungerTimer_Tick(object sender, EventArgs e)
+        private async void HungerTimer_Tick(object? sender, EventArgs e)
         {
             if (currentUser == null) return;
 
             try
             {
-                // Получаем статус питомца с сервера
                 var response = await client.GetAsync($"/pet/status/{currentUser.user_id}");
                 if (response.IsSuccessStatusCode)
                 {
@@ -584,44 +334,30 @@ namespace FinancialTamagotchi
                     {
                         currentUser.food_currency = status.food_currency;
                         currentUser.pet_energy = status.pet_energy;
-
                         Dispatcher.Invoke(UpdateUI);
 
-                        // Показываем предупреждение если питомец голоден
-                        if (currentUser.pet_energy <= 20 && currentUser.pet_energy > 0)
+                        if (currentUser.pet_energy < 30)
                         {
-                            Dispatcher.Invoke(() =>
-                            {
-                                ShowInfoDialog("Питомец голоден!",
-                                    $"Энергия питомца: {currentUser.pet_energy}%\nПокормите его скорее!");
-                            });
-                        }
-                        else if (currentUser.pet_energy <= 0)
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                ShowInfoDialog("Питомец уснул!",
-                                    "Питомец уснул от голода.\nПокормите его, чтобы разбудить!");
-                            });
+                            ShowNotification("⚠️ Питомец голоден! Покормите его!");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка таймера: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка таймера: {ex.Message}");
             }
         }
 
         private void StartPetAnimation()
         {
-            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            var animation = new DoubleAnimation
             {
                 From = 0.95,
                 To = 1.05,
                 Duration = TimeSpan.FromSeconds(2),
                 AutoReverse = true,
-                RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+                RepeatBehavior = RepeatBehavior.Forever
             };
 
             PetBorder.RenderTransformOrigin = new Point(0.5, 0.5);
@@ -632,7 +368,7 @@ namespace FinancialTamagotchi
 
         private void SetupButtonEffects()
         {
-            var buttons = new[] { ExpenseButton, IncomeButton, GoalsButton, ChartsButton, FeedPetButton, ProfileButton };
+            var buttons = new Button[] { ExpenseButton, IncomeButton, GoalsButton, ChartsButton, FeedPetButton, ProfileButton, SettingsButton };
 
             foreach (var button in buttons)
             {
@@ -653,112 +389,129 @@ namespace FinancialTamagotchi
             }
         }
 
+        private async Task LoadUserData()
+        {
+            if (currentUser == null) return;
+
+            try
+            {
+                var userResponse = await client.GetAsync($"/users/{currentUser.user_id}");
+                if (userResponse.IsSuccessStatusCode)
+                {
+                    var json = await userResponse.Content.ReadAsStringAsync();
+                    currentUser = JsonSerializer.Deserialize<User>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+
+                var goalsResponse = await client.GetAsync($"/goals/?user_id={currentUser.user_id}");
+                if (goalsResponse.IsSuccessStatusCode)
+                {
+                    var json = await goalsResponse.Content.ReadAsStringAsync();
+                    goals = JsonSerializer.Deserialize<List<Goal>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<Goal>();
+                }
+
+                var transactionsResponse = await client.GetAsync($"/transactions/?user_id={currentUser.user_id}");
+                if (transactionsResponse.IsSuccessStatusCode)
+                {
+                    var json = await transactionsResponse.Content.ReadAsStringAsync();
+                    transactions = JsonSerializer.Deserialize<List<Transaction>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<Transaction>();
+                }
+
+                UpdateUI();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки данных: {ex.Message}");
+            }
+        }
+
         private void UpdateUI()
         {
             if (currentUser == null) return;
 
-            // Обновляем денежный баланс
-            BalanceText.Text = $"{currentUser.current_balance:N2} ₽";
+            BalanceText.Text = $"{currentUser.current_balance:N0} ₽";
             PetBalanceText.Text = $"{currentUser.current_balance:N0} ₽";
-
-            // Обновляем игровую валюту
             FoodCurrencyText.Text = currentUser.food_currency.ToString();
             FoodText.Text = currentUser.food_currency.ToString();
-
-            // Обновляем энергию
             EnergyBar.Value = currentUser.pet_energy;
+            EnergyPercent.Text = $"{currentUser.pet_energy}%";
+            WelcomeText.Text = $"Добро пожаловать, {currentUser.name}!";
 
-            // Обновляем имя пользователя в профиле
-            if (UserNameText != null)
-            {
-                UserNameText.Text = currentUser.name;
-            }
-
-            // Обновляем внешний вид питомца
             UpdatePetAppearance();
         }
 
         private void UpdatePetAppearance()
         {
+            if (currentUser == null) return;
+
             if (currentUser.pet_energy <= 0)
             {
                 PetEmoji.Text = "😴";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-                MoodText.Text = "Уснул 😴";
+                MoodText.Text = "Уснул";
             }
             else if (currentUser.pet_energy <= 20)
             {
                 PetEmoji.Text = "😢";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 235, 156));
-                MoodText.Text = "Очень голоден! 🥺";
+                MoodText.Text = "Очень голоден!";
             }
             else if (currentUser.pet_energy <= 40)
             {
                 PetEmoji.Text = "😕";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 224, 102));
-                MoodText.Text = "Хочет кушать 😐";
+                MoodText.Text = "Хочет кушать";
             }
             else if (currentUser.pet_energy <= 60)
             {
                 PetEmoji.Text = "😐";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 214, 51));
-                MoodText.Text = "Нормально 😐";
+                MoodText.Text = "Нормально";
             }
             else if (currentUser.pet_energy <= 80)
             {
                 PetEmoji.Text = "😊";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7));
-                MoodText.Text = "Хорошо! 😊";
+                MoodText.Text = "Хорошо!";
             }
             else
             {
                 PetEmoji.Text = "😄";
-                PetBorder.Background = new SolidColorBrush(Color.FromRgb(255, 193, 7));
-                MoodText.Text = "Отлично! 😄";
+                MoodText.Text = "Отлично!";
             }
-        }
-
-        private async void ExpenseButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ShowAddExpenseDialog();
-        }
-
-        private async void IncomeButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ShowAddIncomeDialog();
-        }
-
-        private async void GoalsButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ShowGoalsDialog();
-        }
-
-        private async void ChartsButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ShowChartsDialog();
         }
 
         private async void FeedPetButton_Click(object sender, RoutedEventArgs e)
         {
-            await FeedPet();
-        }
+            if (currentUser == null)
+            {
+                ShowNotification("Сначала войдите в аккаунт!");
+                return;
+            }
 
-        private async Task FeedPet()
-        {
             if (currentUser.food_currency < 10)
             {
-                ShowErrorDialog("Недостаточно корма", "У вас недостаточно корма! Добавьте доход, чтобы заработать корм.");
+                ShowNotification("Недостаточно корма! Заработайте деньги (доход) и корм появится автоматически!");
                 return;
             }
 
             try
             {
-                var response = await client.PostAsync($"/pet/feed?user_id={currentUser.user_id}&food_amount=10", null);
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("user_id", currentUser.user_id.ToString()),
+                    new KeyValuePair<string, string>("food_amount", "10")
+                });
+
+                var response = await client.PostAsync("/pet/feed", content);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<FeedResult>(json, new JsonSerializerOptions
+                    var responseJson = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<FeedResult>(responseJson, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -767,137 +520,167 @@ namespace FinancialTamagotchi
                     {
                         currentUser.food_currency = result.food_currency;
                         currentUser.pet_energy = result.pet_energy;
-
                         UpdateUI();
 
-                        // Анимация кормления
-                        var animation = new System.Windows.Media.Animation.DoubleAnimation
-                        {
-                            From = 1.2,
-                            To = 1.0,
-                            Duration = TimeSpan.FromSeconds(0.3)
-                        };
-                        PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
-                        PetBorder.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
-
-                        string message = $"Питомец покормлен! +20⚡";
                         if (result.bonus > 0)
                         {
-                            message += $"\nБонус: +{result.bonus}🥕";
+                            ShowNotification($"🍽️ Вы покормили питомца! Энергия +20, Корм -10. Бонус: +{result.bonus} корма! 🎉");
                         }
-
-                        ShowSuccessDialog("Кормление успешно!", message);
+                        else
+                        {
+                            ShowNotification($"🍽️ Вы покормили питомца! Энергия +20, Корм -10");
+                        }
                     }
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    var errorJson = await response.Content.ReadAsStringAsync();
-                    ShowErrorDialog("Ошибка кормления", errorJson.Replace("\"", ""));
                 }
                 else
                 {
-                    ShowErrorDialog("Ошибка кормления", "Произошла неизвестная ошибка при кормлении питомца.");
+                    var error = await response.Content.ReadAsStringAsync();
+                    ShowNotification($"Ошибка при кормлении: {error}");
                 }
-            }
-            catch (HttpRequestException)
-            {
-                ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
             }
             catch (Exception ex)
             {
-                ShowErrorDialog("Ошибка кормления", ex.Message);
+                ShowNotification($"Ошибка: {ex.Message}");
             }
         }
 
-        private async Task ShowAddExpenseDialog()
+        private async void ExpenseButton_Click(object sender, RoutedEventArgs e)
         {
+            if (currentUser == null)
+            {
+                ShowNotification("Сначала войдите в аккаунт!");
+                return;
+            }
+
             var dialog = new Window
             {
-                Title = "💸 Добавить трату",
-                Width = 400,
-                Height = 400,
+                Title = "Добавить расход",
+                Width = 380,
+                Height = 420,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
                 ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
             };
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Текущий баланс для информации
-            var balanceInfo = new Border
+            var mainBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
-                CornerRadius = new CornerRadius(5),
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 15)
+                Background = Brushes.White,
+                CornerRadius = new CornerRadius(24),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0E0")),
+                BorderThickness = new Thickness(1),
+                Effect = new DropShadowEffect { BlurRadius = 20, ShadowDepth = 3, Opacity = 0.1 }
             };
 
-            var balanceText = new TextBlock
+            var panel = new StackPanel { Margin = new Thickness(24) };
+
+            var titlePanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 20) };
+            titlePanel.Children.Add(new TextBlock { Text = "💸", FontSize = 28, Margin = new Thickness(0, 0, 10, 0) });
+            titlePanel.Children.Add(new TextBlock
             {
-                Text = $"💰 Текущий баланс: {currentUser.current_balance:N2} ₽",
-                FontSize = 14,
+                Text = "Добавить расход",
+                FontSize = 22,
                 FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Green
-            };
-            balanceInfo.Child = balanceText;
-            mainPanel.Children.Add(balanceInfo);
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5722")),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            panel.Children.Add(titlePanel);
 
-            // Сумма
-            mainPanel.Children.Add(CreateLabel("Сумма (₽):"));
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Сумма",
+                FontSize = 14,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#625A5A")),
+                Margin = new Thickness(0, 0, 0, 8)
+            });
 
             var amountBox = new TextBox
             {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
+                FontSize = 18,
+                Height = 50,
+                Padding = new Thickness(15, 0, 15, 0),
+                Margin = new Thickness(0, 0, 0, 20),
+                Text = "100",
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5722")),
+                FontWeight = FontWeights.Bold
             };
-            mainPanel.Children.Add(amountBox);
+            amountBox.GotFocus += (s, args) => { if (amountBox.Text == "100") amountBox.Text = ""; };
+            amountBox.LostFocus += (s, args) => { if (string.IsNullOrWhiteSpace(amountBox.Text)) amountBox.Text = "100"; };
+            panel.Children.Add(amountBox);
 
-            // Категория
-            mainPanel.Children.Add(CreateLabel("Категория:"));
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Категория",
+                FontSize = 14,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#625A5A")),
+                Margin = new Thickness(0, 0, 0, 8)
+            });
 
             var categoryBox = new ComboBox
             {
                 FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
+                Height = 50,
+                Margin = new Thickness(0, 0, 0, 25),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5")),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0E0")),
+                BorderThickness = new Thickness(1)
             };
 
-            categoryBox.Items.Add("🍔 Продукты");
-            categoryBox.Items.Add("🚌 Транспорт");
-            categoryBox.Items.Add("🏠 Жильё");
-            categoryBox.Items.Add("👕 Одежда");
-            categoryBox.Items.Add("💊 Здоровье");
-            categoryBox.Items.Add("🎬 Развлечения");
-            categoryBox.Items.Add("📚 Образование");
+            var categories = new[]
+            {
+                new { Icon = "🍔", Name = "Продукты" },
+                new { Icon = "🚗", Name = "Транспорт" },
+                new { Icon = "🏠", Name = "Жильё" },
+                new { Icon = "👕", Name = "Одежда" },
+                new { Icon = "💊", Name = "Здоровье" },
+                new { Icon = "🎮", Name = "Развлечения" },
+                new { Icon = "📚", Name = "Образование" },
+                new { Icon = "💸", Name = "Другое" }
+            };
+
+            foreach (var cat in categories)
+            {
+                var stack = new StackPanel { Orientation = Orientation.Horizontal };
+                stack.Children.Add(new TextBlock { Text = cat.Icon, FontSize = 18, Margin = new Thickness(0, 0, 10, 0) });
+                stack.Children.Add(new TextBlock { Text = cat.Name, FontSize = 15, VerticalAlignment = VerticalAlignment.Center });
+                categoryBox.Items.Add(stack);
+            }
             categoryBox.SelectedIndex = 0;
+            panel.Children.Add(categoryBox);
 
-            mainPanel.Children.Add(categoryBox);
-
-            // Кнопки
-            var buttonPanel = new StackPanel
+            var okButton = new Button
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
+                Content = "OK",
+                Height = 52,
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                Cursor = Cursors.Hand,
+                Margin = new Thickness(0, 10, 0, 0),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5722"))
             };
 
-            var addButton = CreateButton("Добавить", Brushes.OrangeRed);
-            addButton.Click += async (s, e) =>
+            okButton.Click += async (s, args) =>
             {
-                if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
+                string selectedCategory = "";
+                if (categoryBox.SelectedItem is StackPanel sp && sp.Children[1] is TextBlock tb)
                 {
-                    ShowErrorDialog("Ошибка ввода", "Введите корректную сумму!");
+                    selectedCategory = tb.Text;
+                }
+
+                if (!decimal.TryParse(amountBox.Text, out decimal amount) || amount <= 0)
+                {
+                    MessageBox.Show("Введите корректную сумму!");
                     return;
                 }
 
-                // Проверка на клиенте
-                if (amount > currentUser.current_balance)
+                if (amount > (decimal)currentUser.current_balance)
                 {
-                    ShowErrorDialog("Недостаточно средств",
-                        $"У вас на балансе {currentUser.current_balance:N2} ₽, а вы пытаетесь потратить {amount:N2} ₽.\n\nПополните баланс или уменьшите сумму траты.");
+                    MessageBox.Show($"Недостаточно средств! Баланс: {currentUser.current_balance:N2} ₽");
                     return;
                 }
 
@@ -906,114 +689,189 @@ namespace FinancialTamagotchi
                     var expense = new
                     {
                         user_id = currentUser.user_id,
-                        amount = amount,
-                        category = categoryBox.SelectedItem.ToString(),
-                        date = DateTime.Today.ToString("yyyy-MM-dd")
+                        amount = (double)amount,
+                        category = selectedCategory,
+                        description = "",
+                        date = DateTime.Now.ToString("yyyy-MM-dd"),
+                        is_planned = false
                     };
 
                     var json = JsonSerializer.Serialize(expense);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                     var response = await client.PostAsync("/expenses/", content);
 
                     if (response.IsSuccessStatusCode)
                     {
                         await LoadUserData();
-                        ShowSuccessDialog("Трата добавлена!", $"Трата на {amount:N2}₽ успешно добавлена!");
                         dialog.Close();
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        var errorJson = await response.Content.ReadAsStringAsync();
-                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                        ShowNotification($"💰 Расход: {selectedCategory} -{amount:N2} ₽");
                     }
                     else
                     {
-                        ShowErrorDialog("Ошибка", "Произошла ошибка при добавлении траты.");
+                        var error = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Ошибка: {error}");
                     }
-                }
-                catch (HttpRequestException)
-                {
-                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
                 }
                 catch (Exception ex)
                 {
-                    ShowErrorDialog("Ошибка", ex.Message);
+                    MessageBox.Show($"Ошибка: {ex.Message}");
                 }
             };
 
-            var cancelButton = CreateButton("Отмена", Brushes.Gray);
-            cancelButton.Click += (s, e) => dialog.Close();
+            panel.Children.Add(okButton);
 
-            buttonPanel.Children.Add(addButton);
-            buttonPanel.Children.Add(cancelButton);
-            mainPanel.Children.Add(buttonPanel);
+            var closeButton = new Button
+            {
+                Content = "✕",
+                Width = 30,
+                Height = 30,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999")),
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, -10, -10, 0)
+            };
+            closeButton.Click += (s, args) => dialog.Close();
 
-            dialog.Content = mainPanel;
+            var grid = new Grid();
+            grid.Children.Add(mainBorder);
+            grid.Children.Add(closeButton);
+            mainBorder.Child = panel;
+            dialog.Content = grid;
             dialog.ShowDialog();
         }
 
-        private async Task ShowAddIncomeDialog()
+        private async void IncomeButton_Click(object sender, RoutedEventArgs e)
         {
+            if (currentUser == null)
+            {
+                ShowNotification("Сначала войдите в аккаунт!");
+                return;
+            }
+
             var dialog = new Window
             {
-                Title = "💰 Добавить доход",
-                Width = 400,
-                Height = 400,
+                Title = "Добавить доход",
+                Width = 380,
+                Height = 420,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
                 ResizeMode = ResizeMode.NoResize,
-                Background = Brushes.White
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
             };
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+            var mainBorder = new Border
+            {
+                Background = Brushes.White,
+                CornerRadius = new CornerRadius(24),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0E0")),
+                BorderThickness = new Thickness(1),
+                Effect = new DropShadowEffect { BlurRadius = 20, ShadowDepth = 3, Opacity = 0.1 }
+            };
 
-            // Сумма
-            mainPanel.Children.Add(CreateLabel("Сумма (₽):"));
+            var panel = new StackPanel { Margin = new Thickness(24) };
+
+            var titlePanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 20) };
+            titlePanel.Children.Add(new TextBlock { Text = "💰", FontSize = 28, Margin = new Thickness(0, 0, 10, 0) });
+            titlePanel.Children.Add(new TextBlock
+            {
+                Text = "Добавить доход",
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            panel.Children.Add(titlePanel);
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Сумма",
+                FontSize = 14,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#625A5A")),
+                Margin = new Thickness(0, 0, 0, 8)
+            });
 
             var amountBox = new TextBox
             {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
+                FontSize = 18,
+                Height = 50,
+                Padding = new Thickness(15, 0, 15, 0),
+                Margin = new Thickness(0, 0, 0, 20),
+                Text = "1000",
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                FontWeight = FontWeights.Bold
             };
-            mainPanel.Children.Add(amountBox);
+            amountBox.GotFocus += (s, args) => { if (amountBox.Text == "1000") amountBox.Text = ""; };
+            amountBox.LostFocus += (s, args) => { if (string.IsNullOrWhiteSpace(amountBox.Text)) amountBox.Text = "1000"; };
+            panel.Children.Add(amountBox);
 
-            // Источник
-            mainPanel.Children.Add(CreateLabel("Источник:"));
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Категория",
+                FontSize = 14,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#625A5A")),
+                Margin = new Thickness(0, 0, 0, 8)
+            });
 
-            var sourceBox = new ComboBox
+            var categoryBox = new ComboBox
             {
                 FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
+                Height = 50,
+                Margin = new Thickness(0, 0, 0, 25),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5")),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0E0")),
+                BorderThickness = new Thickness(1)
             };
 
-            sourceBox.Items.Add("💼 Зарплата");
-            sourceBox.Items.Add("🏠 Аренда");
-            sourceBox.Items.Add("📈 Инвестиции");
-            sourceBox.Items.Add("🎁 Подарок");
-            sourceBox.Items.Add("💻 Фриланс");
-            sourceBox.Items.Add("🏆 Премия");
-            sourceBox.SelectedIndex = 0;
-
-            mainPanel.Children.Add(sourceBox);
-
-            // Кнопки
-            var buttonPanel = new StackPanel
+            var categories = new[]
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
+                new { Icon = "💼", Name = "Зарплата" },
+                new { Icon = "💻", Name = "Фриланс" },
+                new { Icon = "🎁", Name = "Подарок" },
+                new { Icon = "📈", Name = "Инвестиции" },
+                new { Icon = "🏆", Name = "Премия" },
+                new { Icon = "🏠", Name = "Аренда" },
+                new { Icon = "💰", Name = "Другое" }
             };
 
-            var addButton = CreateButton("Добавить", Brushes.LimeGreen);
-            addButton.Click += async (s, e) =>
+            foreach (var cat in categories)
             {
-                if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
+                var stack = new StackPanel { Orientation = Orientation.Horizontal };
+                stack.Children.Add(new TextBlock { Text = cat.Icon, FontSize = 18, Margin = new Thickness(0, 0, 10, 0) });
+                stack.Children.Add(new TextBlock { Text = cat.Name, FontSize = 15, VerticalAlignment = VerticalAlignment.Center });
+                categoryBox.Items.Add(stack);
+            }
+            categoryBox.SelectedIndex = 0;
+            panel.Children.Add(categoryBox);
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Height = 52,
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                Cursor = Cursors.Hand,
+                Margin = new Thickness(0, 10, 0, 0),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2"))
+            };
+
+            okButton.Click += async (s, args) =>
+            {
+                string selectedCategory = "";
+                if (categoryBox.SelectedItem is StackPanel sp && sp.Children[1] is TextBlock tb)
                 {
-                    ShowErrorDialog("Ошибка ввода", "Введите корректную сумму!");
+                    selectedCategory = tb.Text;
+                }
+
+                if (!decimal.TryParse(amountBox.Text, out decimal amount) || amount <= 0)
+                {
+                    MessageBox.Show("Введите корректную сумму!");
                     return;
                 }
 
@@ -1022,318 +880,391 @@ namespace FinancialTamagotchi
                     var income = new
                     {
                         user_id = currentUser.user_id,
-                        amount = amount,
-                        source = sourceBox.SelectedItem.ToString(),
-                        date = DateTime.Today.ToString("yyyy-MM-dd"),
+                        amount = (double)amount,
+                        source = selectedCategory,
+                        date = DateTime.Now.ToString("yyyy-MM-dd"),
                         is_recurring = false
                     };
 
                     var json = JsonSerializer.Serialize(income);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                     var response = await client.PostAsync("/incomes/", content);
 
                     if (response.IsSuccessStatusCode)
                     {
                         await LoadUserData();
-                        ShowSuccessDialog("Доход добавлен!",
-                            $"Доход {amount:N2}₽ успешно добавлен!\n\n🎉 Получено +10🥕 за доход!");
                         dialog.Close();
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        var errorJson = await response.Content.ReadAsStringAsync();
-                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                        ShowNotification($"💵 Доход: +{amount:N2} ₽");
                     }
                     else
                     {
-                        ShowErrorDialog("Ошибка", "Произошла ошибка при добавлении дохода.");
+                        var error = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Ошибка: {error}");
                     }
-                }
-                catch (HttpRequestException)
-                {
-                    ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу. Убедитесь, что сервер запущен.");
                 }
                 catch (Exception ex)
                 {
-                    ShowErrorDialog("Ошибка", ex.Message);
+                    MessageBox.Show($"Ошибка: {ex.Message}");
                 }
             };
 
-            var cancelButton = CreateButton("Отмена", Brushes.Gray);
-            cancelButton.Click += (s, e) => dialog.Close();
+            panel.Children.Add(okButton);
 
-            buttonPanel.Children.Add(addButton);
-            buttonPanel.Children.Add(cancelButton);
-            mainPanel.Children.Add(buttonPanel);
+            var closeButton = new Button
+            {
+                Content = "✕",
+                Width = 30,
+                Height = 30,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999")),
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, -10, -10, 0)
+            };
+            closeButton.Click += (s, args) => dialog.Close();
 
-            dialog.Content = mainPanel;
+            var grid = new Grid();
+            grid.Children.Add(mainBorder);
+            grid.Children.Add(closeButton);
+            mainBorder.Child = panel;
+            dialog.Content = grid;
             dialog.ShowDialog();
         }
 
-        private async Task ShowGoalsDialog()
+        private async void GoalsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Обновляем цели перед показом
-            await LoadUserData();
+            if (currentUser == null)
+            {
+                ShowNotification("Сначала войдите в аккаунт!");
+                return;
+            }
 
             var dialog = new Window
             {
-                Title = "🎯 Мои финансовые цели",
-                Width = 600,
-                Height = 700,
+                Title = "Мои цели",
+                Width = 450,
+                Height = 500,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
-                Background = Brushes.White
+                ResizeMode = ResizeMode.NoResize,
+                Background = Brushes.White,
+                WindowStyle = WindowStyle.SingleBorderWindow
             };
 
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+            var scrollViewer = new ScrollViewer();
+            var panel = new StackPanel { Margin = new Thickness(20) };
 
-            // Заголовок
-            var title = new TextBlock
+            panel.Children.Add(new TextBlock
             {
-                Text = "Ваши финансовые цели",
-                FontSize = 24,
+                Text = "🎯 Финансовые цели",
+                FontSize = 20,
                 FontWeight = FontWeights.Bold,
-                Foreground = Brushes.DodgerBlue,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(title);
-
-            // Информация о наградах
-            var rewardInfo = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(255, 248, 225)),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(15, 15, 15, 15),
-                Margin = new Thickness(0, 0, 0, 20),
-                BorderBrush = Brushes.Orange,
-                BorderThickness = new Thickness(1, 1, 1, 1)
-            };
-
-            var rewardStack = new StackPanel();
-            rewardStack.Children.Add(new TextBlock
-            {
-                Text = "🎁 Награды за выполнение целей:",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Orange,
-                Margin = new Thickness(0, 0, 0, 5)
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                Margin = new Thickness(0, 0, 0, 15)
             });
 
-            rewardStack.Children.Add(new TextBlock
+            await LoadUserData();
+
+            if (goals.Count == 0)
             {
-                Text = "• За выполнение цели: 50-100🥕",
-                FontSize = 12,
-                Margin = new Thickness(10, 0, 0, 2)
-            });
-
-            rewardStack.Children.Add(new TextBlock
-            {
-                Text = "• Чем больше цель, тем больше награда!",
-                FontSize = 12,
-                Margin = new Thickness(10, 0, 0, 0)
-            });
-
-            rewardInfo.Child = rewardStack;
-            mainPanel.Children.Add(rewardInfo);
-
-            // Панель целей
-            var goalsScroll = new ScrollViewer
-            {
-                Height = 350,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-
-            var goalsPanel = new StackPanel();
-
-            if (goals == null || goals.Count == 0)
-            {
-                goalsPanel.Children.Add(new TextBlock
+                panel.Children.Add(new TextBlock
                 {
-                    Text = "У вас пока нет целей. Добавьте первую!",
-                    FontSize = 16,
-                    FontStyle = FontStyles.Italic,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 20, 0, 20)
+                    Text = "Нет активных целей. Создайте новую!",
+                    FontSize = 14,
+                    Foreground = Brushes.Gray,
+                    Margin = new Thickness(0, 0, 0, 15)
                 });
             }
             else
             {
                 foreach (var goal in goals)
                 {
-                    var goalCard = await CreateGoalCard(goal);
-                    if (goalCard != null)
+                    var border = new Border
                     {
-                        goalsPanel.Children.Add(goalCard);
+                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5")),
+                        CornerRadius = new CornerRadius(10),
+                        Padding = new Thickness(15),
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
+
+                    var stack = new StackPanel();
+
+                    var titleStack = new StackPanel { Orientation = Orientation.Horizontal };
+                    titleStack.Children.Add(new TextBlock
+                    {
+                        Text = goal.name,
+                        FontSize = 16,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2"))
+                    });
+                    if (goal.is_completed)
+                    {
+                        titleStack.Children.Add(new TextBlock
+                        {
+                            Text = " ✅ ВЫПОЛНЕНА",
+                            FontSize = 12,
+                            Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"))
+                        });
                     }
+                    stack.Children.Add(titleStack);
+
+                    stack.Children.Add(new TextBlock
+                    {
+                        Text = $"Цель: {goal.target_amount:N2} ₽",
+                        FontSize = 12,
+                        Margin = new Thickness(0, 5, 0, 0)
+                    });
+                    stack.Children.Add(new TextBlock
+                    {
+                        Text = $"Накоплено: {goal.current_amount:N2} ₽",
+                        FontSize = 12
+                    });
+
+                    var progressBar = new ProgressBar
+                    {
+                        Value = goal.current_amount,
+                        Maximum = goal.target_amount,
+                        Height = 6,
+                        Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D0FF00")),
+                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D9D9D9")),
+                        Margin = new Thickness(0, 8, 0, 8)
+                    };
+                    stack.Children.Add(progressBar);
+
+                    if (!goal.is_completed)
+                    {
+                        var addButton = new Button
+                        {
+                            Content = "💰 Пополнить цель",
+                            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                            Foreground = Brushes.White,
+                            Height = 30,
+                            FontSize = 12,
+                            Cursor = Cursors.Hand,
+                            Margin = new Thickness(0, 5, 0, 0)
+                        };
+
+                        int goalId = goal.goal_id;
+                        addButton.Click += async (s, args) =>
+                        {
+                            var amountDialog = new Window
+                            {
+                                Title = "Пополнение цели",
+                                Width = 300,
+                                Height = 150,
+                                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                                Owner = dialog,
+                                ResizeMode = ResizeMode.NoResize,
+                                Background = Brushes.White,
+                                WindowStyle = WindowStyle.SingleBorderWindow
+                            };
+
+                            var amountPanel = new StackPanel { Margin = new Thickness(20) };
+                            amountPanel.Children.Add(new TextBlock { Text = "Сумма пополнения (₽):", FontSize = 14 });
+                            var amountBox = new TextBox { FontSize = 14, Height = 35, Margin = new Thickness(0, 10, 0, 10), Text = "1000" };
+                            amountPanel.Children.Add(amountBox);
+
+                            var confirmButton = new Button
+                            {
+                                Content = "Пополнить",
+                                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")),
+                                Foreground = Brushes.White,
+                                Height = 35
+                            };
+                            confirmButton.Click += async (c, args2) =>
+                            {
+                                if (decimal.TryParse(amountBox.Text, out decimal addAmount) && addAmount > 0)
+                                {
+                                    try
+                                    {
+                                        var response = await client.PostAsync($"/goals/{goalId}/add_money?amount={(double)addAmount}&user_id={currentUser.user_id}", null);
+                                        if (response.IsSuccessStatusCode)
+                                        {
+                                            await LoadUserData();
+                                            amountDialog.Close();
+                                            dialog.Close();
+                                            ShowNotification($"🎯 Цель пополнена на {addAmount:N2} ₽!");
+                                        }
+                                        else
+                                        {
+                                            var error = await response.Content.ReadAsStringAsync();
+                                            MessageBox.Show($"Ошибка: {error}");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show($"Ошибка: {ex.Message}");
+                                    }
+                                }
+                            };
+                            amountPanel.Children.Add(confirmButton);
+                            amountDialog.Content = amountPanel;
+                            amountDialog.ShowDialog();
+                        };
+                        stack.Children.Add(addButton);
+                    }
+                    else if (!goal.reward_claimed)
+                    {
+                        var rewardButton = new Button
+                        {
+                            Content = $"🎁 Получить награду ({goal.reward_amount} корма)",
+                            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9800")),
+                            Foreground = Brushes.White,
+                            Height = 30,
+                            FontSize = 12,
+                            Cursor = Cursors.Hand,
+                            Margin = new Thickness(0, 5, 0, 0)
+                        };
+
+                        int goalId = goal.goal_id;
+                        rewardButton.Click += async (c, args2) =>
+                        {
+                            try
+                            {
+                                var response = await client.PostAsync($"/goals/{goalId}/claim_reward?user_id={currentUser.user_id}", null);
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    await LoadUserData();
+                                    dialog.Close();
+                                    ShowNotification($"🎉 Награда получена: +{goal.reward_amount} корма!");
+                                }
+                                else
+                                {
+                                    var error = await response.Content.ReadAsStringAsync();
+                                    MessageBox.Show($"Ошибка: {error}");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Ошибка: {ex.Message}");
+                            }
+                        };
+                        stack.Children.Add(rewardButton);
+                    }
+
+                    border.Child = stack;
+                    panel.Children.Add(border);
                 }
             }
 
-            goalsScroll.Content = goalsPanel;
-            mainPanel.Children.Add(goalsScroll);
-
-            // Кнопки
-            var buttonPanel = new StackPanel
+            var createButton = new Button
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-
-            var addGoalButton = CreateButton("➕ Добавить цель", Brushes.DodgerBlue);
-            addGoalButton.Click += (s, e) =>
-            {
-                dialog.Close();
-                ShowAddGoalDialog();
-            };
-
-            var addMoneyButton = CreateButton("💰 Пополнить цель", Brushes.LimeGreen);
-            addMoneyButton.Click += (s, e) =>
-            {
-                if (goals != null && goals.Count > 0)
-                {
-                    dialog.Close();
-                    ShowAddMoneyToGoalDialog();
-                }
-                else
-                {
-                    ShowInfoDialog("Информация", "Сначала добавьте цель!");
-                }
-            };
-
-            var closeButton = CreateButton("Закрыть", Brushes.Gray);
-            closeButton.Click += (s, e) => dialog.Close();
-
-            buttonPanel.Children.Add(addGoalButton);
-            buttonPanel.Children.Add(addMoneyButton);
-            buttonPanel.Children.Add(closeButton);
-
-            mainPanel.Children.Add(buttonPanel);
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
-        }
-
-        private async Task<Border> CreateGoalCard(FinancialGoal goal)
-        {
-            if (goal == null) return null;
-
-            var progress = goal.current_amount / goal.target_amount;
-            var daysLeft = (goal.deadline - DateTime.Now).Days;
-
-            var card = new Border
-            {
-                Background = Brushes.White,
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(15, 15, 15, 15),
-                Margin = new Thickness(0, 0, 0, 10),
-                BorderBrush = Brushes.LightGray,
-                BorderThickness = new Thickness(1, 1, 1, 1)
-            };
-
-            var stack = new StackPanel();
-
-            // Название и статус
-            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
-
-            var nameText = new TextBlock
-            {
-                Text = goal.name,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Foreground = goal.is_completed ? Brushes.LimeGreen : Brushes.DodgerBlue
-            };
-
-            var statusText = new TextBlock
-            {
-                Text = goal.is_completed ? " ✓ Выполнено" : $" ⌛ {daysLeft} дней",
+                Content = "+ Создать новую цель",
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                Foreground = Brushes.White,
+                Height = 40,
                 FontSize = 14,
-                Margin = new Thickness(10, 0, 0, 0),
-                Foreground = goal.is_completed ? Brushes.LimeGreen : Brushes.Orange
+                Cursor = Cursors.Hand,
+                Margin = new Thickness(0, 10, 0, 0)
             };
 
-            headerPanel.Children.Add(nameText);
-            headerPanel.Children.Add(statusText);
-            stack.Children.Add(headerPanel);
-
-            // Прогресс
-            stack.Children.Add(new TextBlock
+            createButton.Click += async (s, args) =>
             {
-                Text = $"{goal.current_amount:N0}₽ / {goal.target_amount:N0}₽",
-                FontSize = 16,
-                Margin = new Thickness(0, 10, 0, 5)
-            });
-
-            var progressBar = new ProgressBar
-            {
-                Value = progress * 100,
-                Height = 20,
-                Maximum = 100,
-                Foreground = progress >= 1 ? Brushes.LimeGreen :
-                            progress > 0.7 ? Brushes.DodgerBlue :
-                            progress > 0.4 ? Brushes.Orange : Brushes.OrangeRed
-            };
-            stack.Children.Add(progressBar);
-
-            stack.Children.Add(new TextBlock
-            {
-                Text = $"{progress:P0}",
-                FontSize = 12,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 2, 0, 5)
-            });
-
-            // Дедлайн
-            stack.Children.Add(new TextBlock
-            {
-                Text = $"📅 До {goal.deadline:dd.MM.yyyy}",
-                FontSize = 12,
-                FontStyle = FontStyles.Italic,
-                Foreground = Brushes.Gray
-            });
-
-            // Кнопка получения награды
-            if (goal.is_completed && !goal.reward_claimed)
-            {
-                var claimButton = CreateSmallButton("🎁 Получить награду", Brushes.Orange);
-                claimButton.Click += async (s, e) =>
+                var goalDialog = new Window
                 {
+                    Title = "Новая цель",
+                    Width = 350,
+                    Height = 300,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = dialog,
+                    ResizeMode = ResizeMode.NoResize,
+                    Background = Brushes.White,
+                    WindowStyle = WindowStyle.SingleBorderWindow
+                };
+
+                var goalPanel = new StackPanel { Margin = new Thickness(20) };
+                goalPanel.Children.Add(new TextBlock { Text = "Название цели:", FontSize = 14, Margin = new Thickness(0, 0, 0, 5) });
+                var nameBox = new TextBox { FontSize = 14, Height = 35, Margin = new Thickness(0, 0, 0, 15), Text = "Новая цель" };
+                goalPanel.Children.Add(nameBox);
+                goalPanel.Children.Add(new TextBlock { Text = "Целевая сумма (₽):", FontSize = 14, Margin = new Thickness(0, 0, 0, 5) });
+                var amountBox = new TextBox { FontSize = 14, Height = 35, Margin = new Thickness(0, 0, 0, 15), Text = "10000" };
+                goalPanel.Children.Add(amountBox);
+                goalPanel.Children.Add(new TextBlock { Text = "Дедлайн (необязательно):", FontSize = 14, Margin = new Thickness(0, 0, 0, 5) });
+                var deadlineBox = new DatePicker { FontSize = 14, Height = 35, Margin = new Thickness(0, 0, 0, 15) };
+                goalPanel.Children.Add(deadlineBox);
+
+                var createGoalButton = new Button
+                {
+                    Content = "Создать цель",
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")),
+                    Foreground = Brushes.White,
+                    Height = 40,
+                    FontSize = 14,
+                    Cursor = Cursors.Hand
+                };
+
+                createGoalButton.Click += async (c, args2) =>
+                {
+                    if (!decimal.TryParse(amountBox.Text, out decimal amount) || amount <= 0)
+                    {
+                        MessageBox.Show("Введите корректную сумму!");
+                        return;
+                    }
+
                     try
                     {
-                        var response = await client.PostAsync($"/goals/{goal.goal_id}/claim_reward?user_id={currentUser.user_id}", null);
+                        var newGoal = new
+                        {
+                            user_id = currentUser.user_id,
+                            name = nameBox.Text,
+                            target_amount = (double)amount,
+                            current_amount = 0.0,
+                            deadline = deadlineBox.SelectedDate?.ToString("yyyy-MM-dd"),
+                            is_completed = false,
+                            reward_amount = 50,
+                            reward_claimed = false
+                        };
+
+                        var json = JsonSerializer.Serialize(newGoal);
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                        var response = await client.PostAsync("/goals/", content);
 
                         if (response.IsSuccessStatusCode)
                         {
                             await LoadUserData();
-                            ShowSuccessDialog("Награда получена!",
-                                $"Получено {goal.reward_amount}🥕 за выполнение цели '{goal.name}'!");
-                            await ShowGoalsDialog();
+                            goalDialog.Close();
+                            dialog.Close();
+                            ShowNotification($"🎯 Создана новая цель: {nameBox.Text} на {amount:N2} ₽");
                         }
-                        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                        else
                         {
-                            var errorJson = await response.Content.ReadAsStringAsync();
-                            ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
+                            var error = await response.Content.ReadAsStringAsync();
+                            MessageBox.Show($"Ошибка при создании цели: {error}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        ShowErrorDialog("Ошибка", ex.Message);
+                        MessageBox.Show($"Ошибка: {ex.Message}");
                     }
                 };
-                stack.Children.Add(claimButton);
-            }
 
-            card.Child = stack;
-            return card;
+                goalPanel.Children.Add(createGoalButton);
+                goalDialog.Content = goalPanel;
+                goalDialog.ShowDialog();
+            };
+
+            panel.Children.Add(createButton);
+            scrollViewer.Content = panel;
+            dialog.Content = scrollViewer;
+            dialog.ShowDialog();
         }
 
-        private async Task ShowChartsDialog()
+        private async void ChartsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (currentUser == null)
+            {
+                ShowNotification("Сначала войдите в аккаунт!");
+                return;
+            }
+
             try
             {
                 var response = await client.GetAsync($"/transactions/stats/{currentUser.user_id}");
                 if (!response.IsSuccessStatusCode)
                 {
-                    ShowErrorDialog("Ошибка", "Не удалось загрузить статистику");
+                    ShowNotification("Ошибка загрузки статистики");
                     return;
                 }
 
@@ -1343,1002 +1274,188 @@ namespace FinancialTamagotchi
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (stats == null) return;
-
                 var dialog = new Window
                 {
-                    Title = "📊 Графики доходов и расходов",
-                    Width = 900,
-                    Height = 800,
+                    Title = "Графики и статистика",
+                    Width = 500,
+                    Height = 500,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Owner = this,
-                    Background = Brushes.White
+                    ResizeMode = ResizeMode.NoResize,
+                    Background = Brushes.White,
+                    WindowStyle = WindowStyle.SingleBorderWindow
                 };
 
                 var scrollViewer = new ScrollViewer();
-                var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
+                var panel = new StackPanel { Margin = new Thickness(20) };
 
-                // Заголовок
-                var title = new TextBlock
+                panel.Children.Add(new TextBlock
                 {
-                    Text = "Финансовая статистика",
-                    FontSize = 24,
+                    Text = "📊 Финансовая статистика",
+                    FontSize = 20,
                     FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DodgerBlue,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 0, 0, 20)
-                };
-                mainPanel.Children.Add(title);
-
-                // ========== ДИАГРАММА СЭНКИ ==========
-                var sankeyTitle = new TextBlock
-                {
-                    Text = "🌊 Диаграмма Сэнки (потоки доходов и расходов)",
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DarkViolet,
-                    Margin = new Thickness(0, 0, 0, 10)
-                };
-                mainPanel.Children.Add(sankeyTitle);
-
-                var sankeyDescription = new TextBlock
-                {
-                    Text = "Показывает, как деньги поступают из источников дохода и распределяются по категориям расходов",
-                    FontSize = 12,
-                    Foreground = Brushes.Gray,
-                    FontStyle = FontStyles.Italic,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
                     Margin = new Thickness(0, 0, 0, 15)
-                };
-                mainPanel.Children.Add(sankeyDescription);
+                });
 
-                // Создаем канвас для рисования диаграммы Сэнки
-                var sankeyCanvas = new Canvas
+                var totalsBorder = new Border
                 {
-                    Width = 800,
-                    Height = 400,
-                    Background = new SolidColorBrush(Color.FromRgb(250, 250, 250)),
-                    Margin = new Thickness(0, 0, 0, 20)
-                };
-
-                // Рисуем диаграмму Сэнки
-                DrawSankeyDiagram(sankeyCanvas, stats);
-                mainPanel.Children.Add(sankeyCanvas);
-
-                // ========== СВОДКА ==========
-                var summaryTitle = new TextBlock
-                {
-                    Text = "💰 Общая статистика",
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DodgerBlue,
-                    Margin = new Thickness(0, 20, 0, 10)
-                };
-                mainPanel.Children.Add(summaryTitle);
-
-                var summaryPanel = new Border
-                {
-                    Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5")),
                     CornerRadius = new CornerRadius(10),
-                    Padding = new Thickness(15, 15, 15, 15),
-                    Margin = new Thickness(0, 0, 0, 20),
-                    BorderBrush = Brushes.LightBlue,
-                    BorderThickness = new Thickness(1, 1, 1, 1)
-                };
-
-                var summaryStack = new StackPanel();
-
-                var totalIncome = stats.totals?.total_income ?? 0;
-                var totalExpense = stats.totals?.total_expense ?? 0;
-                var balance = totalIncome - totalExpense;
-
-                summaryStack.Children.Add(new TextBlock
-                {
-                    Text = $"Всего доходов: {totalIncome:N2} ₽",
-                    FontSize = 16,
-                    Foreground = Brushes.Green,
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-
-                summaryStack.Children.Add(new TextBlock
-                {
-                    Text = $"Всего расходов: {totalExpense:N2} ₽",
-                    FontSize = 16,
-                    Foreground = Brushes.Red,
-                    Margin = new Thickness(0, 0, 0, 5)
-                });
-
-                summaryStack.Children.Add(new TextBlock
-                {
-                    Text = $"Итоговый баланс: {balance:N2} ₽",
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = balance >= 0 ? Brushes.Green : Brushes.Red,
-                    Margin = new Thickness(0, 10, 0, 0)
-                });
-
-                summaryPanel.Child = summaryStack;
-                mainPanel.Children.Add(summaryPanel);
-
-                // ========== ГРАФИК ПО ДНЯМ ==========
-                var dailyTitle = new TextBlock
-                {
-                    Text = "📅 Доходы и расходы по дням (последние 7 дней):",
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DodgerBlue,
+                    Padding = new Thickness(15),
                     Margin = new Thickness(0, 0, 0, 10)
                 };
-                mainPanel.Children.Add(dailyTitle);
 
-                if (stats.daily != null)
+                var totalsStack = new StackPanel();
+                totalsStack.Children.Add(new TextBlock
                 {
-                    foreach (var day in stats.daily)
-                    {
-                        var dayPanel = CreateDayChart(day.day, day.income, day.expense);
-                        mainPanel.Children.Add(dayPanel);
-                    }
-                }
-
-                // ========== ГРАФИК ПО КАТЕГОРИЯМ ==========
-                var categoryTitle = new TextBlock
-                {
-                    Text = "📊 Расходы по категориям:",
-                    FontSize = 18,
+                    Text = $"💰 Всего доходов: {(stats?.totals?.total_income ?? 0):N2} ₽",
+                    FontSize = 14,
                     FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.DodgerBlue,
-                    Margin = new Thickness(0, 20, 0, 10)
-                };
-                mainPanel.Children.Add(categoryTitle);
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"))
+                });
+                totalsStack.Children.Add(new TextBlock
+                {
+                    Text = $"💸 Всего расходов: {(stats?.totals?.total_expense ?? 0):N2} ₽",
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5722")),
+                    Margin = new Thickness(0, 5, 0, 0)
+                });
+                totalsStack.Children.Add(new TextBlock
+                {
+                    Text = $"📈 Текущий баланс: {currentUser.current_balance:N2} ₽",
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),
+                    Margin = new Thickness(0, 5, 0, 0)
+                });
+                totalsBorder.Child = totalsStack;
+                panel.Children.Add(totalsBorder);
 
-                if (stats.categories == null || stats.categories.Length == 0)
+                if (stats?.categories != null && stats.categories.Count > 0)
                 {
-                    mainPanel.Children.Add(new TextBlock
+                    panel.Children.Add(new TextBlock
                     {
-                        Text = "Нет данных о расходах",
-                        FontSize = 14,
-                        FontStyle = FontStyles.Italic,
-                        Foreground = Brushes.Gray,
-                        Margin = new Thickness(10, 0, 0, 10)
+                        Text = "📂 Расходы по категориям:",
+                        FontSize = 16,
+                        FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 10, 0, 10)
                     });
-                }
-                else
-                {
-                    double maxExpense = stats.categories.Max(x => x.total);
-                    foreach (var item in stats.categories)
+
+                    foreach (var cat in stats.categories)
                     {
-                        var categoryPanel = CreateCategoryChart(item.category, item.total, maxExpense);
-                        mainPanel.Children.Add(categoryPanel);
+                        var catBorder = new Border
+                        {
+                            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBBEFF")),
+                            CornerRadius = new CornerRadius(8),
+                            Padding = new Thickness(12),
+                            Margin = new Thickness(0, 0, 0, 5)
+                        };
+                        catBorder.Child = new TextBlock
+                        {
+                            Text = $"{cat.category}: {cat.total:N2} ₽",
+                            FontSize = 13,
+                            Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2"))
+                        };
+                        panel.Children.Add(catBorder);
                     }
                 }
 
-                // Кнопка закрытия
-                var closeButton = CreateButton("Закрыть", Brushes.Gray);
-                closeButton.HorizontalAlignment = HorizontalAlignment.Center;
-                closeButton.Margin = new Thickness(0, 30, 0, 10);
-                closeButton.Click += (s, e) => dialog.Close();
-                mainPanel.Children.Add(closeButton);
-
-                // Легенда для диаграммы Сэнки
-                var legendPanel = new StackPanel
+                panel.Children.Add(new TextBlock
                 {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 10, 0, 0)
-                };
+                    Text = $"📝 Последние транзакции ({transactions.Count}):",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 10, 0, 10)
+                });
 
-                legendPanel.Children.Add(CreateLegendItem("Доходы", Brushes.Green));
-                legendPanel.Children.Add(CreateLegendItem("Расходы", Brushes.Red));
-                legendPanel.Children.Add(CreateLegendItem("Поток", new SolidColorBrush(Color.FromArgb(100, 30, 144, 255))));
+                foreach (var trans in transactions.GetRange(0, Math.Min(10, transactions.Count)))
+                {
+                    var transBorder = new Border
+                    {
+                        CornerRadius = new CornerRadius(8),
+                        Padding = new Thickness(12),
+                        Margin = new Thickness(0, 0, 0, 5),
+                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5"))
+                    };
 
-                mainPanel.Children.Add(legendPanel);
+                    var sign = trans.type == "income" ? "+" : "-";
+                    transBorder.Child = new TextBlock
+                    {
+                        Text = $"{trans.date?.ToString("dd.MM")} | {trans.category} | {sign}{trans.amount:N2} ₽",
+                        FontSize = 12,
+                        Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"))
+                    };
+                    panel.Children.Add(transBorder);
+                }
 
-                scrollViewer.Content = mainPanel;
+                scrollViewer.Content = panel;
                 dialog.Content = scrollViewer;
                 dialog.ShowDialog();
             }
-            catch (HttpRequestException)
-            {
-                ShowErrorDialog("Ошибка подключения", "Не удалось подключиться к серверу для загрузки статистики.");
-            }
             catch (Exception ex)
             {
-                ShowErrorDialog("Ошибка загрузки статистики", ex.Message);
+                ShowNotification($"Ошибка загрузки статистики: {ex.Message}");
             }
         }
 
-        private void DrawSankeyDiagram(Canvas canvas, StatsResponse stats)
+        private void ProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (stats == null) return;
-
-            canvas.Children.Clear();
-
-            // Определяем источники дохода (у нас их нет напрямую в stats, поэтому создаем тестовые)
-            // В реальном приложении нужно получать данные о доходах по категориям
-            var incomeSources = new Dictionary<string, double>
+            if (currentUser != null)
             {
-                { "Зарплата", stats.totals?.total_income * 0.7 ?? 0 },
-                { "Фриланс", stats.totals?.total_income * 0.2 ?? 0 },
-                { "Инвестиции", stats.totals?.total_income * 0.1 ?? 0 }
-            };
-
-            // Получаем категории расходов
-            var expenseCategories = new List<CategoryStat>();
-            if (stats.categories != null && stats.categories.Length > 0)
-            {
-                expenseCategories = stats.categories.ToList();
+                MessageBox.Show($"👤 Профиль\n\nНикнейм: {currentUser.name}\nEmail: {currentUser.email}\nБаланс: {currentUser.current_balance:N2} ₽\nКорм: {currentUser.food_currency}\nЭнергия питомца: {currentUser.pet_energy}%",
+                    "Ваш профиль", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                expenseCategories.Add(new CategoryStat { category = "Нет данных", total = 1 });
-            }
-
-            // Параметры расположения
-            double canvasWidth = canvas.Width;
-            double canvasHeight = canvas.Height;
-            double leftX = 150;
-            double rightX = canvasWidth - 150;
-            double startY = 50;
-            double endY = canvasHeight - 50;
-
-            // Рассчитываем общую сумму доходов и расходов
-            double totalIncome = incomeSources.Values.Sum();
-            double totalExpense = expenseCategories.Sum(c => c.total);
-
-            // Рисуем левую колонку (источники дохода)
-            DrawLeftColumn(canvas, incomeSources, leftX, startY, endY, totalIncome);
-
-            // Рисуем правую колонку (категории расходов)
-            DrawRightColumn(canvas, expenseCategories, rightX, startY, endY, totalExpense);
-
-            // Рисуем потоки (линии Сэнки)
-            DrawSankeyFlows(canvas, incomeSources, expenseCategories, leftX, rightX, startY, endY, totalIncome, totalExpense);
-        }
-
-        private void DrawLeftColumn(Canvas canvas, Dictionary<string, double> sources, double x, double startY, double endY, double total)
-        {
-            double currentY = startY;
-            double columnHeight = endY - startY;
-            uint[] colors = { 0x4CAF50, 0x8BC34A, 0xCDDC39 }; // Разные оттенки зеленого
-
-            int i = 0;
-            foreach (var source in sources)
-            {
-                double height = (source.Value / total) * columnHeight;
-                if (height < 20) height = 20; // Минимальная высота
-
-                // Рисуем прямоугольник
-                var rect = new Rectangle
-                {
-                    Width = 40,
-                    Height = height,
-                    Fill = new SolidColorBrush(Color.FromRgb((byte)((colors[i] >> 16) & 0xFF),
-                                                             (byte)((colors[i] >> 8) & 0xFF),
-                                                             (byte)(colors[i] & 0xFF))),
-                    Stroke = Brushes.DarkGreen,
-                    StrokeThickness = 1
-                };
-                Canvas.SetLeft(rect, x - 20);
-                Canvas.SetTop(rect, currentY);
-                canvas.Children.Add(rect);
-
-                // Добавляем текст
-                var text = new TextBlock
-                {
-                    Text = $"{source.Key}\n{source.Value:N0}₽",
-                    FontSize = 11,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.Black,
-                    TextAlignment = TextAlignment.Center,
-                    Width = 80
-                };
-                Canvas.SetLeft(text, x - 60);
-                Canvas.SetTop(text, currentY + height / 2 - 15);
-                canvas.Children.Add(text);
-
-                currentY += height;
-                i = (i + 1) % colors.Length;
+                ShowNotification("Сначала войдите в аккаунт!");
             }
         }
 
-        private void DrawRightColumn(Canvas canvas, List<CategoryStat> categories, double x, double startY, double endY, double total)
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            double currentY = startY;
-            double columnHeight = endY - startY;
-            uint[] colors = { 0xF44336, 0xFF5722, 0xFF9800, 0xFFC107, 0xFFEB3B }; // Оттенки красного/оранжевого
-
-            int i = 0;
-            foreach (var category in categories)
-            {
-                double height = (category.total / total) * columnHeight;
-                if (height < 20) height = 20; // Минимальная высота
-
-                // Рисуем прямоугольник
-                var rect = new Rectangle
-                {
-                    Width = 40,
-                    Height = height,
-                    Fill = new SolidColorBrush(Color.FromRgb((byte)((colors[i] >> 16) & 0xFF),
-                                                             (byte)((colors[i] >> 8) & 0xFF),
-                                                             (byte)(colors[i] & 0xFF))),
-                    Stroke = Brushes.DarkRed,
-                    StrokeThickness = 1
-                };
-                Canvas.SetLeft(rect, x - 20);
-                Canvas.SetTop(rect, currentY);
-                canvas.Children.Add(rect);
-
-                // Добавляем текст
-                var text = new TextBlock
-                {
-                    Text = $"{category.category}\n{category.total:N0}₽",
-                    FontSize = 11,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = Brushes.Black,
-                    TextAlignment = TextAlignment.Center,
-                    Width = 80
-                };
-                Canvas.SetLeft(text, x + 20);
-                Canvas.SetTop(text, currentY + height / 2 - 15);
-                canvas.Children.Add(text);
-
-                currentY += height;
-                i = (i + 1) % colors.Length;
-            }
-        }
-
-        private void DrawSankeyFlows(Canvas canvas,
-                                    Dictionary<string, double> sources,
-                                    List<CategoryStat> categories,
-                                    double leftX, double rightX,
-                                    double startY, double endY,
-                                    double totalIncome, double totalExpense)
-        {
-            double leftCurrentY = startY;
-
-            double leftColumnHeight = endY - startY;
-            double rightColumnHeight = endY - startY;
-
-            // Для каждого источника создаем поток к каждой категории
-            foreach (var source in sources)
-            {
-                double sourceHeight = (source.Value / totalIncome) * leftColumnHeight;
-                if (sourceHeight < 20) sourceHeight = 20;
-
-                double sourceStartY = leftCurrentY;
-
-                double rightTempY = startY;
-
-                foreach (var category in categories)
-                {
-                    double categoryHeight = (category.total / totalExpense) * rightColumnHeight;
-                    if (categoryHeight < 20) categoryHeight = 20;
-
-                    double categoryStartY = rightTempY;
-
-                    // Пропорция потока от этого источника к этой категории
-                    // В реальном приложении здесь должны быть реальные данные о том,
-                    // какие доходы в какие расходы переходят
-                    double flowRatio = (source.Value * category.total) / (totalIncome * totalExpense);
-                    double flowWidth = flowRatio * 100; // Максимальная ширина потока 100
-
-                    if (flowWidth > 0.5) // Рисуем только значимые потоки
-                    {
-                        // Создаем путь для потока (изогнутая линия с градиентом)
-                        var path = new Path
-                        {
-                            Stroke = new SolidColorBrush(Color.FromArgb(100, 30, 144, 255)), // Полупрозрачный синий
-                            StrokeThickness = flowWidth,
-                            Opacity = 0.6,
-                            StrokeStartLineCap = PenLineCap.Round,
-                            StrokeEndLineCap = PenLineCap.Round
-                        };
-
-                        // Создаем геометрию пути
-                        var geometry = new PathGeometry();
-                        var figure = new PathFigure();
-
-                        // Начальная точка (середина левого прямоугольника по высоте)
-                        double leftY = sourceStartY + sourceHeight / 2;
-                        figure.StartPoint = new Point(leftX + 20, leftY);
-
-                        // Контрольные точки для кривой Безье
-                        Point cp1 = new Point(leftX + 150, leftY);
-                        Point cp2 = new Point(rightX - 150, categoryStartY + categoryHeight / 2);
-                        Point endPoint = new Point(rightX - 20, categoryStartY + categoryHeight / 2);
-
-                        var segment = new BezierSegment(cp1, cp2, endPoint, true);
-                        figure.Segments.Add(segment);
-
-                        geometry.Figures.Add(figure);
-                        path.Data = geometry;
-
-                        canvas.Children.Add(path);
-                    }
-
-                    rightTempY += categoryHeight;
-                }
-
-                leftCurrentY += sourceHeight;
-            }
-
-            // Добавляем пояснительный текст
-            var explanation = new TextBlock
-            {
-                Text = "Потоки показывают, как доходы распределяются по расходам",
-                FontSize = 10,
-                Foreground = Brushes.Gray,
-                FontStyle = FontStyles.Italic,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            Canvas.SetLeft(explanation, canvas.Width / 2 - 150);
-            Canvas.SetTop(explanation, canvas.Height - 25);
-            canvas.Children.Add(explanation);
-        }
-
-        private StackPanel CreateLegendItem(string text, Brush color)
-        {
-            var panel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(15, 0, 15, 0)
-            };
-
-            var colorBox = new Border
-            {
-                Width = 20,
-                Height = 20,
-                Background = color,
-                CornerRadius = new CornerRadius(3),
-                Margin = new Thickness(0, 0, 5, 0)
-            };
-
-            var label = new TextBlock
-            {
-                Text = text,
-                FontSize = 12,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            panel.Children.Add(colorBox);
-            panel.Children.Add(label);
-
-            return panel;
-        }
-
-        private Border CreateDayChart(string day, double income, double expense)
-        {
-            var border = new Border
-            {
-                Background = Brushes.WhiteSmoke,
-                CornerRadius = new CornerRadius(5),
-                Padding = new Thickness(10, 5, 10, 5),
-                Margin = new Thickness(0, 0, 0, 5),
-                BorderBrush = Brushes.LightGray,
-                BorderThickness = new Thickness(1, 1, 1, 1)
-            };
-
-            var stack = new StackPanel();
-
-            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            headerPanel.Children.Add(new TextBlock
-            {
-                Text = day,
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Width = 80
-            });
-
-            headerPanel.Children.Add(new TextBlock
-            {
-                Text = $"Доход: {income:N0}₽",
-                FontSize = 12,
-                Foreground = Brushes.Green,
-                Width = 100
-            });
-
-            headerPanel.Children.Add(new TextBlock
-            {
-                Text = $"Расход: {expense:N0}₽",
-                FontSize = 12,
-                Foreground = Brushes.Red,
-                Width = 100
-            });
-
-            stack.Children.Add(headerPanel);
-
-            // Визуальное представление
-            var barPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 0) };
-
-            if (income > 0)
-            {
-                var incomeBar = new Border
-                {
-                    Background = Brushes.LimeGreen,
-                    Width = Math.Min(200, income / 50),
-                    Height = 10,
-                    Margin = new Thickness(0, 0, 2, 0)
-                };
-                barPanel.Children.Add(incomeBar);
-            }
-
-            if (expense > 0)
-            {
-                var expenseBar = new Border
-                {
-                    Background = Brushes.OrangeRed,
-                    Width = Math.Min(200, expense / 50),
-                    Height = 10
-                };
-                barPanel.Children.Add(expenseBar);
-            }
-
-            stack.Children.Add(barPanel);
-            border.Child = stack;
-            return border;
-        }
-
-        private Border CreateCategoryChart(string category, double amount, double maxAmount)
-        {
-            var border = new Border
-            {
-                Background = Brushes.WhiteSmoke,
-                CornerRadius = new CornerRadius(5),
-                Padding = new Thickness(10, 5, 10, 5),
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-
-            var stack = new StackPanel();
-
-            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
-            headerPanel.Children.Add(new TextBlock
-            {
-                Text = category,
-                FontSize = 14,
-                Width = 120
-            });
-
-            headerPanel.Children.Add(new TextBlock
-            {
-                Text = $"{amount:N0}₽",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.DodgerBlue
-            });
-
-            stack.Children.Add(headerPanel);
-
-            var bar = new Border
-            {
-                Background = Brushes.DodgerBlue,
-                Width = (amount / maxAmount) * 300,
-                Height = 10,
-                Margin = new Thickness(0, 2, 0, 0)
-            };
-            stack.Children.Add(bar);
-
-            border.Child = stack;
-            return border;
-        }
-
-        private async void ShowAddGoalDialog()
-        {
-            var dialog = new Window
-            {
-                Title = "🎯 Добавить новую цель",
-                Width = 400,
-                Height = 450,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                Background = Brushes.White
-            };
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Название цели
-            mainPanel.Children.Add(CreateLabel("Название цели:"));
-
-            var nameBox = new TextBox
-            {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(nameBox);
-
-            // Целевая сумма
-            mainPanel.Children.Add(CreateLabel("Целевая сумма (₽):"));
-
-            var targetBox = new TextBox
-            {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(targetBox);
-
-            // Текущая сумма
-            mainPanel.Children.Add(CreateLabel("Текущая сумма (₽, опционально):"));
-
-            var currentBox = new TextBox
-            {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20),
-                Text = "0"
-            };
-            mainPanel.Children.Add(currentBox);
-
-            // Дедлайн
-            mainPanel.Children.Add(CreateLabel("Дедлайн:"));
-
-            var datePicker = new DatePicker
-            {
-                FontSize = 16,
-                Height = 40,
-                Margin = new Thickness(0, 0, 0, 20),
-                SelectedDate = DateTime.Now.AddMonths(3)
-            };
-            mainPanel.Children.Add(datePicker);
-
-            // Кнопки
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-
-            var addButton = CreateButton("Добавить цель", Brushes.DodgerBlue);
-            addButton.Click += async (s, e) =>
-            {
-                if (string.IsNullOrWhiteSpace(nameBox.Text))
-                {
-                    ShowErrorDialog("Ошибка", "Введите название цели!");
-                    return;
-                }
-
-                if (!double.TryParse(targetBox.Text, out double target) || target <= 0)
-                {
-                    ShowErrorDialog("Ошибка", "Введите корректную целевую сумму!");
-                    return;
-                }
-
-                if (!double.TryParse(currentBox.Text, out double current) || current < 0)
-                {
-                    current = 0;
-                }
-
-                if (current > target)
-                {
-                    ShowErrorDialog("Ошибка", "Текущая сумма не может превышать целевую!");
-                    return;
-                }
-
-                if (!datePicker.SelectedDate.HasValue)
-                {
-                    ShowErrorDialog("Ошибка", "Выберите дату дедлайна!");
-                    return;
-                }
-
-                try
-                {
-                    // Рассчитываем награду
-                    int reward = (int)(target / 1000);
-                    if (reward < 50) reward = 50;
-                    if (reward > 100) reward = 100;
-
-                    var newGoal = new
-                    {
-                        user_id = currentUser.user_id,
-                        target_amount = target,
-                        current_amount = current,
-                        name = nameBox.Text,
-                        deadline = datePicker.SelectedDate.Value.ToString("yyyy-MM-dd"),
-                        reward_amount = reward
-                    };
-
-                    var json = JsonSerializer.Serialize(newGoal);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    var response = await client.PostAsync("/goals/", content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        ShowSuccessDialog("Цель добавлена!",
-                            $"Цель '{nameBox.Text}' успешно добавлена!\nНаграда за выполнение: {reward}🥕");
-                        await LoadUserData();
-                        dialog.Close();
-                        await ShowGoalsDialog();
-                    }
-                    else
-                    {
-                        ShowErrorDialog("Ошибка", "Не удалось добавить цель.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ShowErrorDialog("Ошибка", ex.Message);
-                }
-            };
-
-            var cancelButton = CreateButton("Отмена", Brushes.Gray);
-            cancelButton.Click += (s, e) => dialog.Close();
-
-            buttonPanel.Children.Add(addButton);
-            buttonPanel.Children.Add(cancelButton);
-            mainPanel.Children.Add(buttonPanel);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
-        }
-
-        private async void ShowAddMoneyToGoalDialog()
-        {
-            var dialog = new Window
-            {
-                Title = "💰 Пополнить цель",
-                Width = 400,
-                Height = 300,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                Background = Brushes.White
-            };
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20, 20, 20, 20) };
-
-            // Текущий баланс
-            var balanceInfo = new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
-                CornerRadius = new CornerRadius(5),
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-
-            var balanceText = new TextBlock
-            {
-                Text = $"💰 Текущий баланс: {currentUser.current_balance:N2} ₽",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Green
-            };
-            balanceInfo.Child = balanceText;
-            mainPanel.Children.Add(balanceInfo);
-
-            // Выбор цели
-            mainPanel.Children.Add(CreateLabel("Выберите цель:"));
-
-            var goalsCombo = new ComboBox
-            {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-
-            var activeGoals = goals.Where(g => !g.is_completed).ToList();
-            foreach (var goal in activeGoals)
-            {
-                goalsCombo.Items.Add(goal);
-            }
-
-            if (goalsCombo.Items.Count == 0)
-            {
-                ShowInfoDialog("Информация", "Нет активных целей для пополнения!");
-                dialog.Close();
-                return;
-            }
-
-            goalsCombo.SelectedIndex = 0;
-            goalsCombo.DisplayMemberPath = "name";
-            mainPanel.Children.Add(goalsCombo);
-
-            // Сумма пополнения
-            mainPanel.Children.Add(CreateLabel("Сумма пополнения (₽):"));
-
-            var amountBox = new TextBox
-            {
-                FontSize = 16,
-                Height = 40,
-                Padding = new Thickness(10, 10, 10, 10),
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-            mainPanel.Children.Add(amountBox);
-
-            // Кнопки
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-
-            var addButton = CreateButton("Пополнить", Brushes.LimeGreen);
-            addButton.Click += async (s, e) =>
-            {
-                if (!double.TryParse(amountBox.Text, out double amount) || amount <= 0)
-                {
-                    ShowErrorDialog("Ошибка", "Введите корректную сумму!");
-                    return;
-                }
-
-                if (amount > currentUser.current_balance)
-                {
-                    ShowErrorDialog("Недостаточно средств",
-                        $"У вас на балансе {currentUser.current_balance:N2} ₽, а вы пытаетесь внести {amount:N2} ₽.");
-                    return;
-                }
-
-                var selectedGoal = goalsCombo.SelectedItem as FinancialGoal;
-                if (selectedGoal == null) return;
-
-                try
-                {
-                    var response = await client.PostAsync(
-                        $"/goals/{selectedGoal.goal_id}/add_money?amount={amount}&user_id={currentUser.user_id}", null);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var json = await response.Content.ReadAsStringAsync();
-                        var result = JsonSerializer.Deserialize<GoalUpdateResult>(json, new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
-                        await LoadUserData();
-
-                        if (result != null && result.bonus > 0)
-                        {
-                            ShowSuccessDialog("Цель пополнена!",
-                                $"Цель '{selectedGoal.name}' пополнена на {amount:N2}₽!\nБонус: +{result.bonus}🥕 за активность!");
-                        }
-                        else
-                        {
-                            ShowSuccessDialog("Цель пополнена!",
-                                $"Цель '{selectedGoal.name}' пополнена на {amount:N2}₽!");
-                        }
-
-                        dialog.Close();
-                        await ShowGoalsDialog();
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                    {
-                        var errorJson = await response.Content.ReadAsStringAsync();
-                        ShowErrorDialog("Ошибка", errorJson.Replace("\"", ""));
-                    }
-                    else
-                    {
-                        ShowErrorDialog("Ошибка", "Не удалось пополнить цель.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ShowErrorDialog("Ошибка", ex.Message);
-                }
-            };
-
-            var cancelButton = CreateButton("Отмена", Brushes.Gray);
-            cancelButton.Click += (s, e) => dialog.Close();
-
-            buttonPanel.Children.Add(addButton);
-            buttonPanel.Children.Add(cancelButton);
-            mainPanel.Children.Add(buttonPanel);
-
-            dialog.Content = mainPanel;
-            dialog.ShowDialog();
-        }
-
-        // Вспомогательные методы
-        private TextBlock CreateLabel(string text)
-        {
-            return new TextBlock
-            {
-                Text = text,
-                FontSize = 16,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 0, 5)
-            };
-        }
-
-        private Button CreateButton(string content, Brush background)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = 120,
-                Height = 40,
-                FontSize = 14,
-                Background = background,
-                Foreground = Brushes.White,
-                Margin = new Thickness(5, 5, 5, 5)
-            };
-
-            button.Template = new ControlTemplate(typeof(Button))
-            {
-                VisualTree = GetButtonTemplate()
-            };
-
-            return button;
-        }
-
-        private Button CreateSmallButton(string content, Brush background)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = 150,
-                Height = 30,
-                FontSize = 12,
-                Background = background,
-                Foreground = Brushes.White,
-                Margin = new Thickness(0, 5, 0, 0)
-            };
-
-            button.Template = new ControlTemplate(typeof(Button))
-            {
-                VisualTree = GetButtonTemplate()
-            };
-
-            return button;
-        }
-
-        private FrameworkElementFactory GetButtonTemplate()
-        {
-            var borderFactory = new FrameworkElementFactory(typeof(Border));
-            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
-            borderFactory.SetValue(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
-            {
-                RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
-            });
-
-            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-            borderFactory.AppendChild(contentPresenter);
-            return borderFactory;
+            MessageBox.Show("Настройки будут доступны в следующем обновлении!\n\nПланируется:\n- Смена питомца\n- Настройка уведомлений\n- Смена темы",
+                "Настройки", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
-    // Классы для работы с API
+    // ========== МОДЕЛИ ДАННЫХ ==========
+
     public class User
     {
         public int user_id { get; set; }
-        public string name { get; set; }
-        public string email { get; set; }
+        public string name { get; set; } = "";
+        public string email { get; set; } = "";
         public double current_balance { get; set; }
         public int food_currency { get; set; }
         public int pet_energy { get; set; }
+        public DateTime registration_date { get; set; }
+        public DateTime last_feed_time { get; set; }
     }
 
-    public class FinancialGoal
+    public class Goal
     {
         public int goal_id { get; set; }
         public int user_id { get; set; }
         public double target_amount { get; set; }
         public double current_amount { get; set; }
-        public string name { get; set; }
-        public DateTime deadline { get; set; }
+        public string name { get; set; } = "";
+        public DateTime? deadline { get; set; }
         public bool is_completed { get; set; }
         public int reward_amount { get; set; }
         public bool reward_claimed { get; set; }
     }
 
-    public class TransactionDto
-    {
-        public DateTime date { get; set; }
-        public double amount { get; set; }
-        public string type { get; set; }
-        public string category { get; set; }
-    }
-
     public class Transaction
     {
-        public DateTime Date { get; set; }
-        public double Amount { get; set; }
-        public string Type { get; set; }
-        public string Category { get; set; }
+        public int transaction_id { get; set; }
+        public int user_id { get; set; }
+        public double amount { get; set; }
+        public string type { get; set; } = "";
+        public string category { get; set; } = "";
+        public DateTime? date { get; set; }
+        public string description { get; set; } = "";
     }
 
     public class PetStatus
@@ -2357,9 +1474,9 @@ namespace FinancialTamagotchi
 
     public class StatsResponse
     {
-        public Totals totals { get; set; }
-        public DailyStat[] daily { get; set; }
-        public CategoryStat[] categories { get; set; }
+        public Totals totals { get; set; } = new Totals();
+        public List<DailyStats> daily { get; set; } = new List<DailyStats>();
+        public List<CategoryStats> categories { get; set; } = new List<CategoryStats>();
     }
 
     public class Totals
@@ -2368,21 +1485,16 @@ namespace FinancialTamagotchi
         public double total_expense { get; set; }
     }
 
-    public class DailyStat
+    public class DailyStats
     {
-        public string day { get; set; }
+        public string day { get; set; } = "";
         public double income { get; set; }
         public double expense { get; set; }
     }
 
-    public class CategoryStat
+    public class CategoryStats
     {
-        public string category { get; set; }
+        public string category { get; set; } = "";
         public double total { get; set; }
-    }
-
-    public class GoalUpdateResult
-    {
-        public int bonus { get; set; }
     }
 }

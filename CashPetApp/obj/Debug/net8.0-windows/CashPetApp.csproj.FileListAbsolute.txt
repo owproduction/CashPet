@@ -18,3 +18,6 @@ D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\refint\CashPetApp.dll
 D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\CashPetApp.pdb
 D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\CashPetApp.genruntimeconfig.cache
 D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\ref\CashPetApp.dll
+D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\App.baml
+D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\Styles\Colors.baml
+D:\Kisl\CashPet\CashPetApp\obj\Debug\net8.0-windows\Styles\PetStyles.baml

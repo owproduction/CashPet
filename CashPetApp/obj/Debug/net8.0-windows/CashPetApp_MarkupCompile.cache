@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 D:\Kisl\CashPet\CashPetApp\App.xaml
-11407045341
+3-1057809506
 
 41368827389
 198-1431420039
-MainWindow.xaml;
+MainWindow.xaml;Styles\Colors.xaml;Styles\PetStyles.xaml;
 
 False
 

@@ -3,32 +3,39 @@
   "WorkspaceRootPath": "D:\\Kisl\\CashPet\\CashPetApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Academy\\AppData\\Local\\Temp\\.vsdbgsrc\\ee34aec267e065140087abd7fd236fad482e6d3ee1f4162ad1b181c8d9923474\\XamlReader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\colors.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:colors.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|d:\\kisl\\cashpet\\cashpetapp\\cashpetapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{385233B9-05FC-4B4F-B25D-A62C2EF8DE74}|CashPetApp.csproj|solutionrelative:cashpetapp.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,7 +45,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,43 +53,18 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "CashPetApp.AssemblyInfo.cs",
-              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
-              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
-              "RelativeToolTip": "obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAUwA8AAAALAAAAAAAAAA==",
+              "DocumentIndex": 4,
+              "Title": "XamlReader.cs",
+              "DocumentMoniker": "C:\\Users\\Academy\\AppData\\Local\\Temp\\.vsdbgsrc\\ee34aec267e065140087abd7fd236fad482e6d3ee1f4162ad1b181c8d9923474\\XamlReader.cs",
+              "ToolTip": "C:\\Users\\Academy\\AppData\\Local\\Temp\\.vsdbgsrc\\ee34aec267e065140087abd7fd236fad482e6d3ee1f4162ad1b181c8d9923474\\XamlReader.cs [\u0422\u043E\u043B\u044C\u043A\u043E \u0447\u0442\u0435\u043D\u0438\u0435]",
+              "ViewState": "AgIAAO0BAAAAAAAAAAAIwP4BAAACAAAAAQAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-17T10:49:15.234Z"
+              "WhenOpened": "2026-04-08T07:54:02.33Z",
+              "EditorCaption": " [\u0422\u043E\u043B\u044C\u043A\u043E \u0447\u0442\u0435\u043D\u0438\u0435]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CashPetApp.csproj",
-              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
-              "RelativeDocumentMoniker": "CashPetApp.csproj",
-              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
-              "RelativeToolTip": "CashPetApp.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-02-10T07:56:16.013Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AssemblyInfo.cs",
-              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\AssemblyInfo.cs",
-              "RelativeDocumentMoniker": "AssemblyInfo.cs",
-              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\AssemblyInfo.cs",
-              "RelativeToolTip": "AssemblyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T07:56:13.586Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\MainWindow.xaml",
               "RelativeDocumentMoniker": "MainWindow.xaml",
@@ -94,19 +76,43 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "App.xaml.cs",
-              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml.cs",
-              "RelativeDocumentMoniker": "App.xaml.cs",
-              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml.cs",
-              "RelativeToolTip": "App.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "CashPetApp.AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
+              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
+              "RelativeToolTip": "obj\\Debug\\net8.0-windows\\CashPetApp.AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAUwA8AAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-04T10:10:02.895Z"
+              "WhenOpened": "2026-02-17T10:49:15.234Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
+              "Title": "CashPetApp.csproj",
+              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
+              "RelativeDocumentMoniker": "CashPetApp.csproj",
+              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\CashPetApp.csproj",
+              "RelativeToolTip": "CashPetApp.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-10T07:56:16.013Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "AssemblyInfo.cs",
+              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\AssemblyInfo.cs",
+              "RelativeToolTip": "AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-10T07:56:13.586Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "App.xaml",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml",
               "RelativeDocumentMoniker": "App.xaml",
@@ -118,16 +124,38 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml.cs",
+              "RelativeDocumentMoniker": "App.xaml.cs",
+              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\App.xaml.cs",
+              "RelativeToolTip": "App.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-04T10:10:02.895Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AgIAAMQCAAAAAAAAAADwv9ICAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAQwEkAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-04T09:49:35.605Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-04T09:49:35.605Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Colors.xaml",
+              "DocumentMoniker": "D:\\Kisl\\CashPet\\CashPetApp\\Colors.xaml",
+              "RelativeDocumentMoniker": "Colors.xaml",
+              "ToolTip": "D:\\Kisl\\CashPet\\CashPetApp\\Colors.xaml",
+              "RelativeToolTip": "Colors.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-04-01T11:26:25.96Z"
             }
           ]
         }
