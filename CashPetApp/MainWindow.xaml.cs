@@ -500,13 +500,8 @@ namespace FinancialTamagotchi
 
             try
             {
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("user_id", currentUser.user_id.ToString()),
-                    new KeyValuePair<string, string>("food_amount", "10")
-                });
-
-                var response = await client.PostAsync("/pet/feed", content);
+                // Отправляем параметры через URL (как ожидает ваш бэкенд)
+                var response = await client.PostAsync($"/pet/feed?user_id={currentUser.user_id}&food_amount=10", null);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -536,11 +531,13 @@ namespace FinancialTamagotchi
                 {
                     var error = await response.Content.ReadAsStringAsync();
                     ShowNotification($"Ошибка при кормлении: {error}");
+                    System.Diagnostics.Debug.WriteLine($"Ошибка: {error}");
                 }
             }
             catch (Exception ex)
             {
                 ShowNotification($"Ошибка: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Исключение: {ex.Message}");
             }
         }
 

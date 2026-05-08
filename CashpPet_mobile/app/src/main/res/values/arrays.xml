@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="categories">
+        <item>🍔 Продукты</item>
+        <item>🚗 Транспорт</item>
+        <item>🏠 Жильё</item>
+        <item>👕 Одежда</item>
+        <item>💊 Здоровье</item>
+        <item>🎮 Развлечения</item>
+        <item>📚 Образование</item>
+        <item>💸 Другое</item>
+    </string-array>
+
+    <string-array name="sources">
+        <item>💼 Зарплата</item>
+        <item>💻 Фриланс</item>
+        <item>🎁 Подарок</item>
+        <item>📈 Инвестиции</item>
+        <item>🏆 Премия</item>
+        <item>🏠 Аренда</item>
+        <item>💰 Другое</item>
+    </string-array>
+</resources>

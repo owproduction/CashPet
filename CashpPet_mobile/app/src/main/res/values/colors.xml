@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="green">#4CAF50</color>
-    <color name="light_green">#8BC34A</color>
-    <color name="red">#FF5722</color>
-    <color name="orange">#FF9800</color>
-    <color name="blue">#2196F3</color>
-    <color name="purple">#9C27B0</color>
-    <color name="yellow">#FFC107</color>
-    <color name="gold">#FFD700</color>
+    <!-- СУЩЕСТВУЮЩИЕ ЦВЕТА ОСТАВИТЬ -->
+
+    <!-- ДОБАВИТЬ ЭТИ ЦВЕТА -->
+    <color name="purple_primary">#601AC2</color>
+    <color name="purple_light">#AA6AE2</color>
+    <color name="purple_bg">#DBBEFF</color>
+    <color name="lime">#D0FF00</color>
+    <color name="green">#B4F73D</color>
+    <color name="gray_text">#625A5A</color>
+    <color name="gray_border">#D9D9D9</color>
+    <color name="expense">#FF5722</color>
+    <color name="income">#4CAF50</color>
     <color name="white">#FFFFFF</color>
-    <color name="black">#333333</color>
-    <color name="gray">#757575</color>
-    <color name="light_gray">#DDDDDD</color>
-    <color name="background">#F5F5F5</color>
-    <color name="brown">#8B4513</color>
 </resources>
