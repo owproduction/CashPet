@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    android:layout_marginBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvGoalName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Название цели"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/purple_1" />
+
+            <TextView
+                android:id="@+id/tvCompleted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✅ ВЫПОЛНЕНА"
+                android:textSize="12sp"
+                android:textColor="@color/button_success"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvGoalAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Цель: 10000 ₽"
+            android:textSize="12sp"
+            android:textColor="@color/gray_1"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/tvGoalProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Накоплено: 0 ₽"
+            android:textSize="12sp"
+            android:textColor="@color/gray_1"
+            android:layout_marginTop="4dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBarGoal"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:progress="0"
+            android:max="100"
+            android:progressTint="@color/lime"
+            android:progressBackgroundTint="@color/gray_2"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnAddMoney"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="💰 Пополнить цель"
+            android:textSize="12sp"
+            android:backgroundTint="@color/purple_1"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnClaimReward"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="🎁 Получить награду"
+            android:textSize="12sp"
+            android:backgroundTint="@color/button_warning"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

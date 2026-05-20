@@ -1,5 +1,7 @@
 package com.example.cashppet_mobile.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -25,19 +27,22 @@ public class DataManager {
 
     private User currentUser;
     private List<Goal> goals;
+    private Context appContext;
 
     private OnDataChangedListener dataChangedListener;
     private OnNotificationListener notificationListener;
 
-    private DataManager() {
+    private DataManager(Context context) {
+        this.appContext = context.getApplicationContext();
         api = ApiClient.getApiInterface();
         executorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
+        loadSavedUser();
     }
 
-    public static synchronized DataManager getInstance() {
+    public static synchronized DataManager getInstance(Context context) {
         if (instance == null) {
-            instance = new DataManager();
+            instance = new DataManager(context);
         }
         return instance;
     }
@@ -52,6 +57,32 @@ public class DataManager {
 
     public User getCurrentUser() { return currentUser; }
     public List<Goal> getGoals() { return goals; }
+
+    private void saveUser(User user) {
+        SharedPreferences prefs = appContext.getSharedPreferences("app_data", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("user_id", user.getUserId());
+        editor.putString("user_name", user.getName());
+        editor.putString("user_email", user.getEmail());
+        editor.putFloat("user_balance", (float) user.getCurrentBalance());
+        editor.putInt("user_food", user.getFoodCurrency());
+        editor.putInt("user_energy", user.getPetEnergy());
+        editor.apply();
+    }
+
+    private void loadSavedUser() {
+        SharedPreferences prefs = appContext.getSharedPreferences("app_data", Context.MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
+        if (userId != -1) {
+            currentUser = new User();
+            currentUser.setUserId(userId);
+            currentUser.setName(prefs.getString("user_name", ""));
+            currentUser.setEmail(prefs.getString("user_email", ""));
+            currentUser.setCurrentBalance(prefs.getFloat("user_balance", 0));
+            currentUser.setFoodCurrency(prefs.getInt("user_food", 100));
+            currentUser.setPetEnergy(prefs.getInt("user_energy", 80));
+        }
+    }
 
     public void login(String username, AuthCallback callback) {
         executorService.execute(() -> {
@@ -70,8 +101,10 @@ public class DataManager {
 
                     if (foundUser != null) {
                         currentUser = foundUser;
+                        saveUser(currentUser);
+                        final String successMessage = "Добро пожаловать, " + currentUser.getName() + "!";
                         mainHandler.post(() -> {
-                            showNotification("Добро пожаловать, " + currentUser.getName() + "!");
+                            showNotification(successMessage);
                             if (callback != null) callback.onSuccess(currentUser);
                             if (dataChangedListener != null) dataChangedListener.onUserChanged(currentUser);
                         });
@@ -80,10 +113,15 @@ public class DataManager {
                             if (callback != null) callback.onError("Пользователь не найден");
                         });
                     }
+                } else {
+                    mainHandler.post(() -> {
+                        if (callback != null) callback.onError("Ошибка входа");
+                    });
                 }
             } catch (Exception e) {
+                final String errorMessage = "Ошибка сети: " + e.getMessage();
                 mainHandler.post(() -> {
-                    if (callback != null) callback.onError("Ошибка сети: " + e.getMessage());
+                    if (callback != null) callback.onError(errorMessage);
                 });
             }
         });
@@ -98,8 +136,10 @@ public class DataManager {
 
                 if (response.isSuccessful() && response.body() != null) {
                     currentUser = response.body();
+                    saveUser(currentUser);
+                    final String successMessage = "Создан новый профиль: " + currentUser.getName() + "!";
                     mainHandler.post(() -> {
-                        showNotification("Создан новый профиль: " + currentUser.getName() + "!");
+                        showNotification(successMessage);
                         if (callback != null) callback.onSuccess(currentUser);
                         if (dataChangedListener != null) dataChangedListener.onUserChanged(currentUser);
                     });
@@ -109,8 +149,9 @@ public class DataManager {
                     });
                 }
             } catch (Exception e) {
+                final String errorMessage = "Ошибка сети: " + e.getMessage();
                 mainHandler.post(() -> {
-                    if (callback != null) callback.onError("Ошибка сети: " + e.getMessage());
+                    if (callback != null) callback.onError(errorMessage);
                 });
             }
         });
@@ -130,8 +171,9 @@ public class DataManager {
                 Response<Transaction> response = call.execute();
 
                 if (response.isSuccessful()) {
+                    final String message = "💰 Расход: " + category + " -" + amount + " ₽";
                     mainHandler.post(() -> {
-                        showNotification("💰 Расход: " + category + " -" + amount + " ₽");
+                        showNotification(message);
                         updateUserBalance();
                     });
                 }
@@ -155,8 +197,9 @@ public class DataManager {
                 Response<Transaction> response = call.execute();
 
                 if (response.isSuccessful()) {
+                    final String message = "💵 Доход: +" + amount + " ₽";
                     mainHandler.post(() -> {
-                        showNotification("💵 Доход: +" + amount + " ₽");
+                        showNotification(message);
                         updateUserBalance();
                     });
                 }
@@ -168,7 +211,8 @@ public class DataManager {
 
     public void feedPet() {
         if (currentUser.getFoodCurrency() < 10) {
-            showNotification("Недостаточно корма!");
+            final String message = "Недостаточно корма!";
+            mainHandler.post(() -> showNotification(message));
             return;
         }
 
@@ -182,17 +226,23 @@ public class DataManager {
                     currentUser.setFoodCurrency(result.food_currency);
                     currentUser.setPetEnergy(result.pet_energy);
 
-                    String message = "🍽️ Покормили! Энергия +20";
+                    String message;
                     if (result.bonus > 0) {
                         message = "🍽️ Покормили! Бонус: +" + result.bonus + " корма! 🎉";
+                    } else {
+                        message = "🍽️ Покормили! Энергия +20, Корм -10";
                     }
 
+                    final String finalMessage = message;
                     mainHandler.post(() -> {
-                        showNotification(message);
+                        showNotification(finalMessage);
                         if (dataChangedListener != null) {
                             dataChangedListener.onUserChanged(currentUser);
                         }
                     });
+                } else {
+                    final String errorMessage = "Ошибка при кормлении";
+                    mainHandler.post(() -> showNotification(errorMessage));
                 }
             } catch (Exception e) {
                 e.printStackTrace();

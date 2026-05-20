@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Финансовый Тамагоччи</string>
+
+    <!-- Navigation menu items -->
+    <string name="nav_expense">Добавить трату</string>
+    <string name="nav_income">Добавить доход</string>
+    <string name="nav_goals">Мои цели</string>
+    <string name="nav_charts">Графики</string>
+    <string name="nav_profile">Профиль</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Pet info -->
+    <string name="pet_name">Копилко-хомяк</string>
+    <string name="feed_button">🥕 Покормить (10 корма)</string>
+
+    <!-- Notifications -->
+    <string name="notification_hungry_title">🐹 Питомец голоден!</string>
+    <string name="notification_hungry_text">Покормите своего финансового хомяка!</string>
+
+    <!-- Errors -->
+    <string name="error_network">Ошибка сети. Проверьте подключение к серверу.</string>
+    <string name="error_server">Ошибка сервера</string>
+    <string name="error_unknown">Неизвестная ошибка</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="delete">Удалить</string>
+</resources>

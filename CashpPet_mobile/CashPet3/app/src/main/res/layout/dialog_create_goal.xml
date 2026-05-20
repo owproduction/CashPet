@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎯 Создание цели"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/purple_1"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Название цели"
+        android:textSize="14sp"
+        android:textColor="@color/gray_1"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etGoalName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Новая цель"
+        android:textSize="14sp"
+        android:padding="12dp"
+        android:background="@drawable/bg_edittext"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Целевая сумма (₽)"
+        android:textSize="14sp"
+        android:textColor="@color/gray_1"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etTargetAmount"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="10000"
+        android:text="10000"
+        android:inputType="numberDecimal"
+        android:textSize="14sp"
+        android:padding="12dp"
+        android:background="@drawable/bg_edittext"
+        android:layout_marginBottom="20dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="Отмена"
+            android:backgroundTint="@color/gray_2"
+            android:textColor="@color/gray_1"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnCreate"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="Создать"
+            android:backgroundTint="@color/purple_1"
+            android:textColor="@color/white"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

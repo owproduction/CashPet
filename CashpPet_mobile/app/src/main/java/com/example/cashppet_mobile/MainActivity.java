@@ -1,4 +1,4 @@
-package com.example.cashppet_mobile; // Или ваш package name
+package com.example.cashppet_mobile;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements DataManager.OnDat
     private MaterialButton btnFeedPet;
     private LinearLayout layoutNotification;
     private TextView tvNotification;
-    private LinearLayout btnAddExpense, btnAddIncome; // Изменено с Button на MaterialCardView
+    private MaterialCardView btnAddExpense, btnAddIncome;
     private Button btnCloseNotification;
 
     private DataManager dataManager;
@@ -64,8 +64,6 @@ public class MainActivity extends AppCompatActivity implements DataManager.OnDat
         btnFeedPet = findViewById(R.id.btnFeedPet);
         layoutNotification = findViewById(R.id.layoutNotification);
         tvNotification = findViewById(R.id.tvNotification);
-        btnAddExpense = findViewById(R.id.btnAddExpense);
-        btnAddIncome = findViewById(R.id.btnAddIncome);
         btnCloseNotification = findViewById(R.id.btnCloseNotification);
     }
 
@@ -78,9 +76,16 @@ public class MainActivity extends AppCompatActivity implements DataManager.OnDat
     }
 
     private void setupDataManager() {
-        dataManager = DataManager.getInstance();
+        // ПЕРЕДАЁМ CONTEXT
+        dataManager = DataManager.getInstance(this);
         dataManager.setOnDataChangedListener(this);
         dataManager.setOnNotificationListener(this);
+
+        // Загружаем данные пользователя
+        User user = dataManager.getCurrentUser();
+        if (user != null) {
+            onUserChanged(user);
+        }
     }
 
     private void setupListeners() {
@@ -109,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements DataManager.OnDat
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_expense, null);
 
-        TextInputEditText etAmount = view.findViewById(R.id.etUsername);
+        TextInputEditText etAmount = view.findViewById(R.id.etAmount);
         MaterialAutoCompleteTextView spinnerCategory = view.findViewById(R.id.spinnerCategory);
 
         String[] categories = getResources().getStringArray(R.array.categories);

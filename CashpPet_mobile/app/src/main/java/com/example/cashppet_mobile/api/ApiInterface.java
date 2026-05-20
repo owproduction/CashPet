@@ -12,6 +12,9 @@ public interface ApiInterface {
     @GET("users/")
     Call<List<User>> getUsers();
 
+    @GET("users/{userId}")
+    Call<User> getUser(@Path("userId") int userId);
+
     @POST("users/")
     Call<User> createUser(@Body User user);
 

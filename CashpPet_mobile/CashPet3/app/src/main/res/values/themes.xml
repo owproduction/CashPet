@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Базовая тема -->
+    <style name="Theme.CashPet3" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Статус бар и навигейшн бар -->
+        <item name="android:statusBarColor">@color/purple_1</item>
+        <item name="android:navigationBarColor">@color/white</item>
+
+        <!-- Цвета -->
+        <item name="colorPrimary">@color/purple_1</item>
+        <item name="colorPrimaryVariant">@color/purple_2</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/lime</item>
+        <item name="colorSecondaryVariant">@color/green</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Цвета для surface -->
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Цвет фона -->
+        <item name="android:windowBackground">@color/background_light</item>
+
+        <!-- Шрифты (по умолчанию) -->
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- Стиль для карточек -->
+    <style name="CardStyle" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardElevation">4dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <!-- Стиль для заголовков -->
+    <style name="HeaderStyle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/purple_1</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <!-- Стиль для подзаголовков -->
+    <style name="SubHeaderStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+    </style>
+
+    <!-- Стиль для текста валюты -->
+    <style name="CurrencyTextStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/purple_1</item>
+    </style>
+
+    <!-- Стиль для текста корма -->
+    <style name="FoodTextStyle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/button_warning</item>
+    </style>
+
+    <!-- Стиль для кнопки меню -->
+    <style name="MenuButtonStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Стиль для диалогов -->
+    <style name="DialogStyle" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
+    </style>
+
+    <!-- Анимация для диалогов -->
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_exit</item>
+    </style>
+</resources>

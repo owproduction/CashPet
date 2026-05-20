@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_expense"
+            android:title="Добавить трату"
+            android:icon="@drawable/ic_expense" />
+
+        <item
+            android:id="@+id/nav_income"
+            android:title="Добавить доход"
+            android:icon="@drawable/ic_income" />
+
+        <item
+            android:id="@+id/nav_goals"
+            android:title="Мои цели"
+            android:icon="@drawable/ic_goals" />
+
+        <item
+            android:id="@+id/nav_charts"
+            android:title="Графики"
+            android:icon="@drawable/ic_charts" />
+
+        <item
+            android:id="@+id/nav_profile"
+            android:title="Профиль"
+            android:icon="@drawable/ic_profile" />
+
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Настройки"
+            android:icon="@drawable/ic_settings" />
+    </group>
+
+</menu>

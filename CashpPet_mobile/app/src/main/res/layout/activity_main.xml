@@ -196,15 +196,15 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="8dp">
+                            android:layout_marginTop="8dp"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Энергия:"
-                                android:textSize="12sp"
-                                android:textColor="@color/gray_text"/>
+                                android:textColor="@color/gray_text"
+                                android:textSize="12sp" />
 
                             <com.google.android.material.progressindicator.LinearProgressIndicator
                                 android:id="@+id/progressEnergy"
@@ -212,17 +212,17 @@
                                 android:layout_height="8dp"
                                 android:layout_marginTop="4dp"
                                 android:progress="80"
-                                app:trackColor="@color/gray_border"
-                                app:indicatorColor="@color/lime"/>
+                                app:indicatorColor="@color/lime"
+                                app:trackColor="@color/gray_border" />
 
                             <TextView
                                 android:id="@+id/tvEnergyPercent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="80%"
-                                android:textSize="10sp"
                                 android:layout_marginTop="4dp"
-                                android:textColor="@color/purple_primary"/>
+                                android:text="80%"
+                                android:textColor="@color/purple_primary"
+                                android:textSize="10sp" />
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
