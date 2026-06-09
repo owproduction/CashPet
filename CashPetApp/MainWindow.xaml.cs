@@ -29,7 +29,7 @@ namespace FinancialTamagotchi
         {
             InitializeComponent();
 
-            client.BaseAddress = new Uri("http://localhost:8000");
+            client.BaseAddress = new Uri("postgresql://postgres:123Secret_a@postgres:5432/financial_tamagotchi");
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
                 new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
