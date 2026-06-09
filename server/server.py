@@ -10,7 +10,7 @@ import random
 from contextlib import asynccontextmanager
 
 # Конфигурация PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/financial_tamagotchi")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:123Secret_a@192.168.133.20:5432/financial_tamagotchi")
 
 # Глобальный пул соединений
 db_pool = None
@@ -703,13 +703,14 @@ async def create_sample_user():
 
 
 # Запуск сервера
+# Запуск сервера
 if __name__ == "__main__":
     print("=" * 50)
     print("🚀 Запуск сервера Финансового Тамагоччи (PostgreSQL)")
     print("=" * 50)
     print(f"📁 База данных: PostgreSQL")
-    print(f"🌐 API доступно по адресу: http://localhost:8000")
-    print(f"📚 Документация: http://localhost:8000/docs")
+    print(f"🌐 API доступно по адресу: http://localhost:8000")  # Изменено с 5555 на 8000
+    print(f"📚 Документация: http://localhost:8000/docs")      # Изменено с 5555 на 8000
     print("=" * 50)
     
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)  # Изменено с 5555 на 8000
