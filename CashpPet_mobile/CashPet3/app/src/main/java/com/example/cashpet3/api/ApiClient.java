@@ -11,7 +11,7 @@ public class ApiClient {
 
     // Для эмулятора Android используем 10.0.2.2 вместо localhost
     // Для реального устройства - IP вашего компьютера в локальной сети
-    private static final String BASE_URL = "http://10.0.2.2:8000/";
+    private static final String BASE_URL = "http://192.168.133.20:8080/";
 
     private static OkHttpClient okHttpClient = null;
     private static Retrofit retrofit = null;

@@ -10,7 +10,7 @@ import random
 from contextlib import asynccontextmanager
 
 # Конфигурация PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:123Secret_a@192.168.133.20:5432/financial_tamagotchi")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:123Secret_a@postgres:5432/financial_tamagotchi")
 
 # Глобальный пул соединений
 db_pool = None
