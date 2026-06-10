@@ -23,7 +23,7 @@ services:
     build: .
     container_name: financial-tamagotchi-server
     ports:
-      - "8000:8000"
+      - "6767:6767"
     environment:
       DATABASE_URL: postgresql://postgres:123Secret_a@postgres:5432/financial_tamagotchi
     volumes:
