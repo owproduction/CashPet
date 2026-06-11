@@ -3,13 +3,17 @@ package com.example.cashpet3;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -17,6 +21,7 @@ import com.example.cashpet3.api.ApiClient;
 import com.example.cashpet3.api.ApiService;
 import com.example.cashpet3.api.models.FeedResult;
 import com.example.cashpet3.api.models.PetStatus;
+import com.example.cashpet3.api.models.StatsResponse;
 import com.example.cashpet3.api.models.User;
 import com.example.cashpet3.ui.dialogs.ExpenseDialog;
 import com.example.cashpet3.ui.dialogs.GoalsDialog;
@@ -47,6 +52,16 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
     private Button feedPetButton;
     private View petBorder;
     private TextView petEmoji;
+
+    // Stats
+    private LinearLayout statsContainer;
+    private LinearLayout statsContent;
+    private ProgressBar statsProgressBar;
+    private TextView tvNoStats;
+    private TextView tvTotalIncome;
+    private TextView tvTotalExpense;
+    private LinearLayout categoriesContainer;
+    private TextView tvNoCategories;
 
     // Notification
     private View notificationBorder;
@@ -114,6 +129,22 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
         notificationText = findViewById(R.id.notificationText);
         closeNotificationButton = findViewById(R.id.closeNotificationButton);
 
+        // Stats views
+        statsContainer = findViewById(R.id.statsContainer);
+        statsContent = findViewById(R.id.statsContent);
+        statsProgressBar = findViewById(R.id.statsProgressBar);
+        tvNoStats = findViewById(R.id.tvNoStats);
+        tvTotalIncome = findViewById(R.id.tvTotalIncome);
+        tvTotalExpense = findViewById(R.id.tvTotalExpense);
+        categoriesContainer = findViewById(R.id.categoriesContainer);
+        tvNoCategories = findViewById(R.id.tvNoCategories);
+
+        // Menu icon
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+        if (menuIcon != null) {
+            menuIcon.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        }
+
         // Start pet animation
         AnimationHelper.startPetPulseAnimation(petBorder);
     }
@@ -128,8 +159,6 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
                 showAddIncomeDialog();
             } else if (id == R.id.nav_goals) {
                 showGoalsDialog();
-            } else if (id == R.id.nav_charts) {
-                showChartsDialog();
             } else if (id == R.id.nav_profile) {
                 showProfileDialog();
             } else if (id == R.id.nav_settings) {
@@ -161,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
     private void setupSwipeRefresh() {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             loadUserData();
+            loadStats();
             swipeRefreshLayout.setRefreshing(false);
         });
     }
@@ -194,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
                     currentUser = response.body();
                     sessionManager.saveUser(currentUser);
                     updateUI();
+                    loadStats();
                 }
             }
 
@@ -220,6 +251,73 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
             petEmoji.setText(currentUser.getPetEmoji());
             moodText.setText(currentUser.getMood());
         });
+    }
+
+    private void loadStats() {
+        if (currentUser == null) return;
+
+        statsProgressBar.setVisibility(View.VISIBLE);
+        tvNoStats.setVisibility(View.GONE);
+        statsContent.setVisibility(View.GONE);
+
+        apiService.getTransactionStats(currentUser.getUserId()).enqueue(new Callback<StatsResponse>() {
+            @Override
+            public void onResponse(Call<StatsResponse> call, Response<StatsResponse> response) {
+                statsProgressBar.setVisibility(View.GONE);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    StatsResponse stats = response.body();
+                    displayStats(stats);
+                } else {
+                    tvNoStats.setText("Нет данных о транзакциях");
+                    tvNoStats.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StatsResponse> call, Throwable t) {
+                statsProgressBar.setVisibility(View.GONE);
+                tvNoStats.setText("Ошибка загрузки: " + t.getMessage());
+                tvNoStats.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void displayStats(StatsResponse stats) {
+        statsContent.setVisibility(View.VISIBLE);
+
+        tvTotalIncome.setText(String.format(Locale.getDefault(), "%.0f ₽", stats.getTotals().getTotalIncome()));
+        tvTotalExpense.setText(String.format(Locale.getDefault(), "%.0f ₽", stats.getTotals().getTotalExpense()));
+
+        categoriesContainer.removeAllViews();
+
+        if (stats.getCategories() == null || stats.getCategories().isEmpty()) {
+            tvNoCategories.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        tvNoCategories.setVisibility(View.GONE);
+
+        int count = 0;
+        for (StatsResponse.CategoryStats category : stats.getCategories()) {
+            if (count >= 5) break;
+
+            View categoryView = LayoutInflater.from(this).inflate(R.layout.item_category_stat, null);
+
+            TextView tvCategoryName = categoryView.findViewById(R.id.tvCategoryName);
+            TextView tvCategoryAmount = categoryView.findViewById(R.id.tvCategoryAmount);
+            ProgressBar categoryProgress = categoryView.findViewById(R.id.categoryProgress);
+
+            tvCategoryName.setText(category.getCategory());
+            tvCategoryAmount.setText(String.format(Locale.getDefault(), "%.0f ₽", category.getTotal()));
+
+            double percent = stats.getTotals().getTotalExpense() > 0 ?
+                    (category.getTotal() / stats.getTotals().getTotalExpense()) * 100 : 0;
+            categoryProgress.setProgress((int) percent);
+
+            categoriesContainer.addView(categoryView);
+            count++;
+        }
     }
 
     private void feedPet() {
@@ -250,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
                             notificationHelper.showBonusNotification(result.getBonus());
                         }
                         showNotification(message);
+                        loadStats();
                     } else {
                         showNotification("Ошибка при кормлении");
                     }
@@ -323,10 +422,6 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.Login
             showNotification("🎯 Цели обновлены!");
         });
         dialog.show(getSupportFragmentManager(), "goals_dialog");
-    }
-
-    private void showChartsDialog() {
-        Toast.makeText(this, "Графики (будет реализовано)", Toast.LENGTH_SHORT).show();
     }
 
     private void showProfileDialog() {

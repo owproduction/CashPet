@@ -8,13 +8,11 @@
     android:background="@color/background_light"
     tools:context=".MainActivity">
 
-    <!-- Основной контент -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Верхняя панель -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -22,18 +20,32 @@
             android:background="@color/purple_1"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Финансовый Тамагоччи"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/menuIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_menu"
+                    android:padding="8dp"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Финансовый Тамагоччи"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- SwipeRefreshLayout для обновления -->
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
@@ -145,7 +157,10 @@
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="20dp"
                         app:cardElevation="4dp"
-                        android:layout_marginBottom="16dp">
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginBottom="16dp"
+                        app:strokeColor="@color/purple_3"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -153,7 +168,6 @@
                             android:orientation="horizontal"
                             android:padding="16dp">
 
-                            <!-- Аватар питомца -->
                             <FrameLayout
                                 android:layout_width="100dp"
                                 android:layout_height="100dp"
@@ -176,7 +190,6 @@
                                 </androidx.cardview.widget.CardView>
                             </FrameLayout>
 
-                            <!-- Информация о питомце -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -193,6 +206,7 @@
                                     android:textColor="@color/purple_1"
                                     android:layout_marginBottom="8dp" />
 
+                                <!-- Баланс и корм -->
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -224,11 +238,11 @@
                                             android:id="@+id/petBalanceText"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:text="15000 ₽"
-                                            android:textSize="12sp"
-                                            android:textStyle="bold"
+                                            android:layout_marginStart="4dp"
+                                            android:text="15000"
                                             android:textColor="@color/purple_1"
-                                            android:layout_marginStart="4dp" />
+                                            android:textSize="12sp"
+                                            android:textStyle="bold" />
                                     </LinearLayout>
 
                                     <LinearLayout
@@ -263,48 +277,50 @@
                                     </LinearLayout>
                                 </LinearLayout>
 
+                                <!-- Настроение -->
                                 <LinearLayout
-                                    android:layout_width="match_parent"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:orientation="horizontal"
                                     android:layout_marginBottom="8dp">
 
-                                    <LinearLayout
-                                        android:layout_width="0dp"
+                                    <TextView
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:orientation="horizontal"
-                                        android:layout_marginEnd="8dp">
+                                        android:text="😊"
+                                        android:textSize="14sp" />
 
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="😊"
-                                            android:textSize="14sp" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Настроение:"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/gray_1"
+                                        android:layout_marginStart="4dp" />
 
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="Настроение:"
-                                            android:textSize="12sp"
-                                            android:textColor="@color/gray_1"
-                                            android:layout_marginStart="4dp" />
+                                    <TextView
+                                        android:id="@+id/moodText"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Отличное!"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/purple_2"
+                                        android:layout_marginStart="4dp"
+                                        android:maxLines="1"
+                                        android:singleLine="true" />
+                                </LinearLayout>
 
-                                        <TextView
-                                            android:id="@+id/moodText"
-                                            android:layout_width="25dp"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginStart="4dp"
-                                            android:text="Отличное!"
-                                            android:textColor="@color/purple_2"
-                                            android:textSize="12sp"
-                                            android:textStyle="bold" />
-                                    </LinearLayout>
+                                <!-- Энергия -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:layout_marginBottom="8dp">
 
                                     <LinearLayout
-                                        android:layout_width="0dp"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_weight="1"
                                         android:orientation="horizontal">
 
                                         <TextView
@@ -331,18 +347,18 @@
                                             android:textColor="@color/purple_1"
                                             android:layout_marginStart="4dp" />
                                     </LinearLayout>
-                                </LinearLayout>
 
-                                <ProgressBar
-                                    android:id="@+id/energyBar"
-                                    style="?android:attr/progressBarStyleHorizontal"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="8dp"
-                                    android:progress="80"
-                                    android:max="100"
-                                    android:progressTint="@color/lime"
-                                    android:progressBackgroundTint="@color/gray_2"
-                                    android:layout_marginBottom="12dp" />
+                                    <ProgressBar
+                                        android:id="@+id/energyBar"
+                                        style="?android:attr/progressBarStyleHorizontal"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="8dp"
+                                        android:progress="80"
+                                        android:max="100"
+                                        android:progressTint="@color/lime"
+                                        android:progressBackgroundTint="@color/gray_2"
+                                        android:layout_marginTop="4dp" />
+                                </LinearLayout>
 
                                 <Button
                                     android:id="@+id/feedPetButton"
@@ -354,6 +370,148 @@
                                     android:textColor="@color/white" />
                             </LinearLayout>
                         </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Блок статистики -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📊 Статистика расходов"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/purple_1"
+                        android:layout_marginBottom="12dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:id="@+id/statsContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <ProgressBar
+                                android:id="@+id/statsProgressBar"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/tvNoStats"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Загрузка статистики..."
+                                android:textSize="12sp"
+                                android:textColor="@color/gray_1"
+                                android:layout_gravity="center"
+                                android:padding="16dp" />
+
+                            <LinearLayout
+                                android:id="@+id/statsContent"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:layout_marginBottom="12dp">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="horizontal"
+                                        android:gravity="center"
+                                        android:background="@color/background_light"
+                                        android:padding="12dp"
+                                        android:layout_marginEnd="8dp">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="💰"
+                                            android:textSize="18sp" />
+
+                                        <TextView
+                                            android:id="@+id/tvTotalIncome"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="0 ₽"
+                                            android:textSize="14sp"
+                                            android:textStyle="bold"
+                                            android:textColor="@color/income_color"
+                                            android:layout_marginStart="6dp" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="horizontal"
+                                        android:gravity="center"
+                                        android:background="@color/background_light"
+                                        android:padding="12dp"
+                                        android:layout_marginStart="8dp">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="💸"
+                                            android:textSize="18sp" />
+
+                                        <TextView
+                                            android:id="@+id/tvTotalExpense"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="0 ₽"
+                                            android:textSize="14sp"
+                                            android:textStyle="bold"
+                                            android:textColor="@color/expense_color"
+                                            android:layout_marginStart="6dp" />
+                                    </LinearLayout>
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Топ категории расходов:"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/gray_1"
+                                    android:layout_marginBottom="8dp" />
+
+                                <LinearLayout
+                                    android:id="@+id/categoriesContainer"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical" />
+
+                                <TextView
+                                    android:id="@+id/tvNoCategories"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Нет данных о расходах"
+                                    android:textSize="12sp"
+                                    android:textColor="@color/gray_1"
+                                    android:layout_gravity="center"
+                                    android:padding="12dp"
+                                    android:visibility="gone" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
                     </androidx.cardview.widget.CardView>
 
                     <!-- Уведомление -->
@@ -404,7 +562,6 @@
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 
-    <!-- Боковое меню -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"

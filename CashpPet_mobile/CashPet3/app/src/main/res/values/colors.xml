@@ -47,4 +47,6 @@
     <color name="progress_energy">#4CAF50</color>
     <color name="progress_goal">#D0FF00</color>
     <color name="progress_bg">#E0E0E0</color>
+
+
 </resources>

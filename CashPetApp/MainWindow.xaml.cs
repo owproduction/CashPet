@@ -157,7 +157,7 @@ namespace FinancialTamagotchi
 
             mainPanel.Children.Add(new TextBlock
             {
-                Text = "🐹 Финансовый Тамагоччи",
+                Text = "🐹 CashPet",
                 FontSize = 24,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#601AC2")),

@@ -30,7 +30,10 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="Игрок"
+        android:text="Игрок"
         android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
         android:padding="12dp"
         android:background="@drawable/bg_edittext"
         android:layout_marginBottom="20dp" />
@@ -39,7 +42,7 @@
         android:id="@+id/tvError"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/button_danger"
+        android:textColor="@color/expense_color"
         android:textSize="12sp"
         android:visibility="gone"
         android:layout_marginBottom="12dp" />
@@ -57,7 +60,7 @@
             android:layout_weight="1"
             android:text="Войти"
             android:textColor="@color/white"
-            android:backgroundTint="@color/button_success"
+            android:backgroundTint="@color/income_color"
             android:layout_marginEnd="8dp" />
 
         <Button
